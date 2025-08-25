@@ -170,15 +170,17 @@ const ColoracaoSimplificado: React.FC = () => {
 
   const renderColorPalette = (region: RegionAnalysis | RegionDetail) => (
     <div className="flex gap-2 mb-2">
-      {Object.entries(region.color_palette).map(([key, color]) => (
-        <div key={key} className="flex flex-col items-center">
-          <div
-            className="w-8 h-8 rounded border border-gray-300"
-            style={{ backgroundColor: color }}
-          />
-          <span className="text-xs text-gray-600 mt-1 capitalize">{key}</span>
-        </div>
-      ))}
+      {Object.entries(region.color_palette)
+        .filter(([key]) => key !== 'logs')
+        .map(([key, color]) => (
+          <div key={key} className="flex flex-col items-center">
+            <div
+              className="w-8 h-8 rounded border border-gray-300"
+              style={{ backgroundColor: color as string }}
+            />
+            <span className="text-xs text-gray-600 mt-1 capitalize">{key}</span>
+          </div>
+        ))}
     </div>
   );
 
