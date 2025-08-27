@@ -104,19 +104,22 @@ export class ColoracaoSimplificadoService {
   static async analyzeImage(
     request: ColoracaoSimplificadoRequest,
     onStatusUpdate?: (status: string) => void
-  ): Promise<ColoracaoSimplificadoResponse> {
+  ): Promise<{ result: ColoracaoSimplificadoResponse; barbaDetected: boolean }> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeouts.default);
 
     try {
       // Step 1: Submit for analysis
       onStatusUpdate?.('Iniciando análise...');
-      const { id } = await this.submitAnalysis(request, controller.signal);
+      const initResponse = await this.submitAnalysis(request, controller.signal);
+      
+      // Extract barba tag
+      const barbaDetected = initResponse.tags.barba === 'true';
       
       // Step 2: Poll for result
-      const result = await this.pollAnalysisResult(id, controller, onStatusUpdate);
+      const result = await this.pollAnalysisResult(initResponse.id, controller, onStatusUpdate);
       
-      return result;
+      return { result, barbaDetected };
     } finally {
       clearTimeout(timeoutId);
     }

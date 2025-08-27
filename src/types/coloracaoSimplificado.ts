@@ -67,6 +67,9 @@ export interface ColoracaoSimplificadoResponse {
 export interface ColoracaoSimplificadoInitResponse {
   id: string;
   status: 'IN_QUEUE';
+  tags: {
+    barba: string;
+  };
 }
 
 export interface ColoracaoClassificacaoRequest {

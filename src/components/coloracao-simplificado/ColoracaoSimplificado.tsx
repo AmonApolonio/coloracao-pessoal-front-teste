@@ -8,7 +8,6 @@ import {
   ColoracaoClassificacaoResponse 
 } from '../../types/coloracaoSimplificado';
 import ImageUploadSection from '../shared/ImageUploadSection';
-import GridButtons from '../shared/GridButtons';
 import AnalysisResultsTab from '../coloracao/AnalysisResultsTab';
 
 const ColoracaoSimplificado: React.FC = () => {
@@ -24,6 +23,7 @@ const ColoracaoSimplificado: React.FC = () => {
   const [isClassifying, setIsClassifying] = useState(false);
   const [classificationStatus, setClassificationStatus] = useState<string>('');
   const [finalResults, setFinalResults] = useState<ColoracaoClassificacaoResponse | null>(null);
+  const [barbaDetected, setBarbaDetected] = useState<boolean>(false);
 
   // Sample image URLs for grid buttons
   const sampleImageUrls = [
@@ -69,7 +69,7 @@ const ColoracaoSimplificado: React.FC = () => {
     setAnalysisStatus('Iniciando extração...');
 
     try {
-      const result = await ColoracaoSimplificadoService.analyzeImage(
+      const { result, barbaDetected } = await ColoracaoSimplificadoService.analyzeImage(
         {
           input: {
             type: 'extracao',
@@ -82,29 +82,15 @@ const ColoracaoSimplificado: React.FC = () => {
       );
 
       setAnalysisResult(result);
+      setBarbaDetected(barbaDetected);
       setAnalysisStatus('');
-      setActiveTab('extraction'); // Set to extraction tab when results arrive
+      setActiveTab('extraction');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro durante a extração');
       setAnalysisStatus('');
     } finally {
       setIsAnalyzing(false);
     }
-  };
-
-  // Type guard to check if a region has an error - Now not applicable with new structure
-  const isRegionError = (region: RegionResult): region is { error: string } => {
-    return 'error' in region;
-  };
-
-  // Type guard to check if a region is successful - Now not applicable with new structure  
-  const isRegionAnalysis = (region: RegionResult): region is RegionAnalysis => {
-    return 'color_palette' in region;
-  };
-
-  // New type guard for RegionDetail
-  const isRegionDetail = (region: RegionDetail): region is RegionDetail => {
-    return 'color_palette' in region;
   };
 
   const handleStartClassification = async () => {
@@ -120,16 +106,21 @@ const ColoracaoSimplificado: React.FC = () => {
 
     // Extract colors from the result field directly
     const colors = analysisResult.output.result;
+    
+    // If barba is detected, exclude mouth_contour and chin from classification
+    const colorsForClassification = barbaDetected 
+      ? Object.fromEntries(Object.entries(colors).filter(([key]) => key !== 'mouth_contour' && key !== 'chin'))
+      : colors;
 
     setIsClassifying(true);
     setClassificationStatus('Iniciando classificação...');
 
     try {
       console.log('Starting classification...');
-      console.log('Sending colors:', colors);
+      console.log('Sending colors:', colorsForClassification);
       
       const result = await ColoracaoSimplificadoService.classifyColors(
-        colors,
+        colorsForClassification,
         (status) => {
           console.log('Classification status:', status);
           setClassificationStatus(status);
@@ -258,17 +249,27 @@ const ColoracaoSimplificado: React.FC = () => {
                 <img
                   src={analysisResult.output.image_url}
                   alt="Imagem analisada"
-                  className="max-w-xs mx-auto rounded-lg shadow-md my-4 cursor-pointer hover:opacity-80 transition-opacity"
+                  className="max-w-xs mx-auto rounded-lg shadow-md mb-4 cursor-pointer hover:opacity-80 transition-opacity"
                   onClick={() => window.open(analysisResult.output.image_url, '_blank')}
                 />
                 <p className="text-sm text-gray-600">
-                  Regiões extraídas: {successfulRegions.length}/{expectedRegions.length}
+                  Regiões extraídas: { (barbaDetected ? successfulRegions.filter(([k]) => k !== 'mouth_contour' && k !== 'chin').length : successfulRegions.length)}/{expectedRegions.length}
                 </p>
               </div>
-              
+
               <div className="md:flex-1">
                 <div className="space-y-3">
-                  {successfulRegions.map(([regionKey, regionData]) => (
+                  {barbaDetected && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+                      Barba detectada — os itens "Contorno da Boca" e "Queixo" foram omitidos da lista de regiões.
+                    </div>
+                  )}
+
+                  {(
+                    barbaDetected
+                      ? successfulRegions.filter(([regionKey]) => regionKey !== 'mouth_contour' && regionKey !== 'chin')
+                      : successfulRegions
+                  ).map(([regionKey, regionData]) => (
                     <div key={regionKey} className="text-center">
                       <span className="text-sm font-medium text-gray-700 mt-1 block">
                         {regionNames[regionKey as keyof typeof regionNames]}: {regionData.color_palette.result}
@@ -284,34 +285,16 @@ const ColoracaoSimplificado: React.FC = () => {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {successfulRegions.map(([regionKey, regionData]) => (
+              {(barbaDetected
+                ? successfulRegions.filter(([regionKey]) => regionKey !== 'mouth_contour' && regionKey !== 'chin')
+                : successfulRegions
+              ).map(([regionKey, regionData]) => (
                 <div key={regionKey} className="bg-gray-50 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-800 mb-3">
                     {regionNames[regionKey as keyof typeof regionNames]}
                   </h4>
 
                   {renderColorPalette(regionData)}
-
-                  {/* <div className="grid grid-cols-2 gap-2 mt-4">
-                    <div className="text-center">
-                      <img
-                        src={regionData.uploaded_images.cropped_url}
-                        alt="Recortada"
-                        className="w-full h-16 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => window.open(regionData.uploaded_images.cropped_url, '_blank')}
-                      />
-                      <span className="text-xs text-gray-600">Recortada</span>
-                    </div>
-                    <div className="text-center">
-                      <img
-                        src={regionData.uploaded_images.filtered_url}
-                        alt="Filtrada"
-                        className="w-full h-16 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => window.open(regionData.uploaded_images.filtered_url, '_blank')}
-                      />
-                      <span className="text-xs text-gray-600">Filtrada</span>
-                    </div>
-                  </div> */}
 
                   <div className="mt-3 text-center">
                     <div
@@ -356,6 +339,7 @@ const ColoracaoSimplificado: React.FC = () => {
           setImageUrl('');
           setIsImageValid(false);
           setError('');
+          setBarbaDetected(false);
           setActiveTab('extraction');
         }}
       />
