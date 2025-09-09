@@ -4,7 +4,8 @@ import {
   ColoracaoSimplificadoResponse, 
   ColoracaoSimplificadoInitResponse,
   ColoracaoClassificacaoRequest,
-  ColoracaoClassificacaoResponse
+  ColoracaoClassificacaoResponse,
+  CombinedAnalysisResult
 } from '../types/coloracaoSimplificado';
 import { API_CONFIG } from './apiConfig';
 
@@ -16,12 +17,19 @@ export class ColoracaoSimplificadoService {
     request: ColoracaoSimplificadoRequest,
     signal?: AbortSignal
   ): Promise<ColoracaoSimplificadoInitResponse> {
-    return ApiClient.post<ColoracaoSimplificadoInitResponse>(
+    const response = await ApiClient.post<any>(
       'VITE_COLORACAO_SIMPLIFICADO_URL',
       request,
       signal,
       false // isFormData
     );
+
+    // If the response contains an error field, throw an error with the message
+    if (response && response.error) {
+      throw new Error(response.error);
+    }
+
+    return response as ColoracaoSimplificadoInitResponse;
   }
 
   /**
@@ -29,6 +37,7 @@ export class ColoracaoSimplificadoService {
    */
   static async pollAnalysisResult(
     id: string,
+    type: 'extracao' | 'extracao-frontal' | 'extracao-olho',
     controller: AbortController,
     onStatusUpdate?: (status: string) => void
   ): Promise<ColoracaoSimplificadoResponse> {
@@ -42,7 +51,7 @@ export class ColoracaoSimplificadoService {
           'VITE_COLORACAO_SIMPLIFICADO_URL',
           { 
             id: id,
-            type: 'extracao'
+            type: type
           },
           controller.signal
         );
@@ -117,7 +126,7 @@ export class ColoracaoSimplificadoService {
       const barbaDetected = initResponse.tags.barba === 'true';
       
       // Step 2: Poll for result
-      const result = await this.pollAnalysisResult(initResponse.id, controller, onStatusUpdate);
+      const result = await this.pollAnalysisResult(initResponse.id, request.input.type, controller, onStatusUpdate);
       
       return { result, barbaDetected };
     } finally {
@@ -238,6 +247,76 @@ export class ColoracaoSimplificadoService {
       const result = await this.pollClassificationResult(id, controller, onStatusUpdate);
       
       return result;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  /**
+   * Analyze both frontal and eye images in parallel
+   */
+  static async analyzeBothImages(
+    frontalImageUrl: string,
+    eyeImageUrl: string,
+    onStatusUpdate?: (status: string) => void
+  ): Promise<CombinedAnalysisResult> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeouts.default);
+
+    try {
+      onStatusUpdate?.('Iniciando análises...');
+
+      // Step 1: Submit both analyses in parallel
+      const [frontalInitResponse, eyeInitResponse] = await Promise.all([
+        this.submitAnalysis({
+          input: {
+            type: 'extracao-frontal',
+            image_url: frontalImageUrl
+          }
+        }, controller.signal),
+        this.submitAnalysis({
+          input: {
+            type: 'extracao-olho',
+            image_url: eyeImageUrl
+          }
+        }, controller.signal)
+      ]);
+
+      // Extract barba tag from frontal analysis
+      const barbaDetected = frontalInitResponse.tags.barba === 'true';
+
+      // Step 2: Poll both results in parallel
+      let frontalStatus = '';
+      let eyeStatus = '';
+      const updateCombinedStatus = () => {
+        onStatusUpdate?.(`Frontal: ${frontalStatus}  |  Olho: ${eyeStatus}`);
+      };
+
+      const [frontalResult, eyeResult] = await Promise.all([
+        this.pollAnalysisResult(frontalInitResponse.id, 'extracao-frontal', controller, (status) => {
+          frontalStatus = status;
+          updateCombinedStatus();
+        }),
+        this.pollAnalysisResult(eyeInitResponse.id, 'extracao-olho', controller, (status) => {
+          eyeStatus = status;
+          updateCombinedStatus();
+        })
+      ]);
+
+      // Step 3: Combine results
+      const combinedColors = { ...frontalResult.output.result };
+      
+      // Replace iris color from frontal with iris from eye analysis if available
+      if (eyeResult.output.result.iris) {
+        combinedColors.iris = eyeResult.output.result.iris;
+      }
+
+      return {
+        frontalResult,
+        eyeResult,
+        combinedColors,
+        barbaDetected
+      };
     } finally {
       clearTimeout(timeoutId);
     }

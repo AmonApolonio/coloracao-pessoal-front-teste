@@ -6,6 +6,7 @@ interface FileUploadWithDragDropProps {
   onFileUploaded: (url: string) => void;
   disabled?: boolean;
   className?: string;
+  uploadType?: 'extracao-frontal' | 'extracao-olho';
 }
 
 interface UploadProgress {
@@ -18,7 +19,8 @@ interface UploadProgress {
 const FileUploadWithDragDrop: React.FC<FileUploadWithDragDropProps> = ({
   onFileUploaded,
   disabled = false,
-  className = ''
+  className = '',
+  uploadType = 'extracao-frontal'
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress>({
@@ -104,6 +106,7 @@ const FileUploadWithDragDrop: React.FC<FileUploadWithDragDropProps> = ({
     try {
       const result: UploadResponse = await N8nUploadService.uploadFile(
         file,
+        uploadType,
         (progress) => {
           setUploadProgress(prev => ({
             ...prev,

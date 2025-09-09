@@ -10,6 +10,7 @@ interface ImageUploadSectionProps {
   onImageValidityChange: (isValid: boolean) => void;
   disabled?: boolean;
   title?: string;
+  uploadType?: 'extracao-frontal' | 'extracao-olho';
   sampleImages?: {
     urls: string[];
     onSampleClick: (index: number) => void;
@@ -23,6 +24,7 @@ const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
   onImageValidityChange,
   disabled = false,
   title = "Upload da Imagem",
+  uploadType = 'extracao-frontal',
   sampleImages
 }) => {
   const [activeTab, setActiveTab] = useState<'url' | 'upload'>('upload');
@@ -76,6 +78,7 @@ const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
             <FileUploadWithDragDrop
               onFileUploaded={handleFileUploaded}
               disabled={disabled}
+              uploadType={uploadType}
             />
           </div>
         )}

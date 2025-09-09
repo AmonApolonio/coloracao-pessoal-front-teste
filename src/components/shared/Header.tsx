@@ -27,6 +27,12 @@ const Header: React.FC = () => {
           
           <div className="flex items-center">
             <button
+              onClick={() => window.location.reload()}
+              className="bg-gray-100 hover:bg-[#947B62] hover:text-white text-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors mr-2"
+            >
+              Voltar
+            </button>
+            <button
               onClick={handleLogout}
               className="bg-gray-100 hover:bg-[#947B62] hover:text-white text-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >

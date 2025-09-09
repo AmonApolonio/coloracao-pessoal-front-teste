@@ -5,16 +5,27 @@ import {
   RegionAnalysis, 
   RegionResult, 
   RegionDetail,
-  ColoracaoClassificacaoResponse 
+  ColoracaoClassificacaoResponse,
+  CombinedAnalysisResult
 } from '../../types/coloracaoSimplificado';
 import ImageUploadSection from '../shared/ImageUploadSection';
 import AnalysisResultsTab from '../coloracao/AnalysisResultsTab';
 
 const ColoracaoSimplificado: React.FC = () => {
-  const [imageUrl, setImageUrl] = useState<string>('');
-  const [isImageValid, setIsImageValid] = useState<boolean>(false);
+  // Step management
+  const [currentStep, setCurrentStep] = useState<'frontal' | 'eye' | 'results'>('frontal');
+  
+  // Frontal image states
+  const [frontalImageUrl, setFrontalImageUrl] = useState<string>('');
+  const [isFrontalImageValid, setIsFrontalImageValid] = useState<boolean>(false);
+  
+  // Eye image states
+  const [eyeImageUrl, setEyeImageUrl] = useState<string>('');
+  const [isEyeImageValid, setIsEyeImageValid] = useState<boolean>(false);
+  
+  // Analysis states
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<ColoracaoSimplificadoResponse | null>(null);
+  const [combinedResult, setCombinedResult] = useState<CombinedAnalysisResult | null>(null);
   const [error, setError] = useState<string>('');
   const [analysisStatus, setAnalysisStatus] = useState<string>('');
   
@@ -25,8 +36,8 @@ const ColoracaoSimplificado: React.FC = () => {
   const [finalResults, setFinalResults] = useState<ColoracaoClassificacaoResponse | null>(null);
   const [barbaDetected, setBarbaDetected] = useState<boolean>(false);
 
-  // Sample image URLs for grid buttons
-  const sampleImageUrls = [
+  // Sample image URLs for frontal face
+  const frontalSampleUrls = [
     'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/frontal/1.png',
     'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/frontal/2.png',
     'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/frontal/3.png',
@@ -43,72 +54,160 @@ const ColoracaoSimplificado: React.FC = () => {
     'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/frontal/20.png',
   ];
 
-  const handleImageUrlChange = (url: string) => {
-    setImageUrl(url);
+  // Sample image URLs for eye close-up
+  const eyeSampleUrls = [
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/olho/sample1.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/olho/sample2.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/olho/sample3.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/olho/sample4.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/olho/sample5.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/olho/sample6.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/olho/sample7.png',
+  ];
+
+  const handleFrontalImageUrlChange = (url: string) => {
+    setFrontalImageUrl(url);
     setError('');
   };
 
-  const handleImageValidityChange = (valid: boolean) => {
-    setIsImageValid(valid);
+  const handleFrontalImageValidityChange = (valid: boolean) => {
+    setIsFrontalImageValid(valid);
   };
 
-  const handleGridButtonClick = (index: number) => {
-    const selectedUrl = sampleImageUrls[index];
-    handleImageUrlChange(selectedUrl);
-    handleImageValidityChange(true);
+  const handleEyeImageUrlChange = (url: string) => {
+    setEyeImageUrl(url);
+    setError('');
+  };
+
+  const handleEyeImageValidityChange = (valid: boolean) => {
+    setIsEyeImageValid(valid);
+  };
+
+  const handleFrontalGridButtonClick = (index: number) => {
+    const selectedUrl = frontalSampleUrls[index];
+    handleFrontalImageUrlChange(selectedUrl);
+    handleFrontalImageValidityChange(true);
+  };
+
+  const handleEyeGridButtonClick = (index: number) => {
+    const selectedUrl = eyeSampleUrls[index];
+    handleEyeImageUrlChange(selectedUrl);
+    handleEyeImageValidityChange(true);
+  };
+
+  const handleNextStep = () => {
+    if (currentStep === 'frontal') {
+      if (!frontalImageUrl.trim() || !isFrontalImageValid) {
+        setError('Por favor, adicione uma URL de imagem frontal válida');
+        return;
+      }
+      setCurrentStep('eye');
+    } else if (currentStep === 'eye') {
+      if (!eyeImageUrl.trim() || !isEyeImageValid) {
+        setError('Por favor, adicione uma URL de imagem do olho válida');
+        return;
+      }
+      handleAnalyze();
+    }
+  };
+
+  const handlePreviousStep = () => {
+    if (currentStep === 'eye') {
+      setCurrentStep('frontal');
+    } else if (currentStep === 'results') {
+      setCurrentStep('eye');
+    }
+  };
+
+  const handleRestart = () => {
+    setCurrentStep('frontal');
+    setFrontalImageUrl('');
+    setIsFrontalImageValid(false);
+    setEyeImageUrl('');
+    setIsEyeImageValid(false);
+    setCombinedResult(null);
+    setFinalResults(null);
+    setError('');
+    setBarbaDetected(false);
+    setActiveTab('extraction');
   };
 
   const handleAnalyze = async () => {
-    if (!imageUrl.trim() || !isImageValid) {
-      setError('Por favor, adicione uma URL de imagem válida');
+    if (!frontalImageUrl.trim() || !isFrontalImageValid) {
+      setError('Por favor, adicione uma URL de imagem frontal válida');
+      return;
+    }
+
+    if (!eyeImageUrl.trim() || !isEyeImageValid) {
+      setError('Por favor, adicione uma URL de imagem do olho válida');
       return;
     }
 
     setIsAnalyzing(true);
     setError('');
-    setAnalysisStatus('Iniciando extração...');
+    setAnalysisStatus('Iniciando análises em paralelo...');
+    setCurrentStep('results');
 
     try {
-      const { result, barbaDetected } = await ColoracaoSimplificadoService.analyzeImage(
-        {
-          input: {
-            type: 'extracao',
-            image_url: imageUrl
+      // Try to catch which request fails (frontal or eye)
+      let result;
+      try {
+        result = await ColoracaoSimplificadoService.analyzeBothImages(
+          frontalImageUrl,
+          eyeImageUrl,
+          (status) => {
+            setAnalysisStatus(status);
           }
-        },
-        (status) => {
-          setAnalysisStatus(status);
+        );
+      } catch (err) {
+        // Try to extract a user-friendly error message and which request failed
+        let message = 'Erro durante a extração';
+        let requestInfo = '';
+        if (err && typeof err === 'object') {
+          if (err instanceof Error) {
+            message = err.message;
+          } else if ('error' in err && typeof err.error === 'string') {
+            message = err.error;
+          }
+          // Try to detect which request failed by error message or custom property
+          if ('requestType' in err && typeof err.requestType === 'string') {
+            requestInfo = err.requestType;
+          } else if (message.toLowerCase().includes('frontal')) {
+            requestInfo = 'frontal';
+          } else if (message.toLowerCase().includes('olho') || message.toLowerCase().includes('eye')) {
+            requestInfo = 'olho';
+          }
         }
-      );
+        setError(requestInfo ? `[${requestInfo.toUpperCase()}] ${message}` : message);
+        setAnalysisStatus('');
+        return;
+      }
 
-      setAnalysisResult(result);
-      setBarbaDetected(barbaDetected);
+      setCombinedResult(result);
+      setBarbaDetected(result.barbaDetected);
       setAnalysisStatus('');
       setActiveTab('extraction');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro durante a extração');
-      setAnalysisStatus('');
     } finally {
       setIsAnalyzing(false);
     }
   };
 
   const handleStartClassification = async () => {
-    if (!analysisResult) return;
+    if (!combinedResult) return;
 
     // Check if we have any successful regions for classification using new structure
-    const hasSuccessfulRegions = Object.keys(analysisResult.output.details).length > 0;
+    const hasSuccessfulRegions = Object.keys(combinedResult.frontalResult.output.details).length > 0;
 
     if (!hasSuccessfulRegions) {
       alert('Não é possível realizar a classificação. Nenhuma região foi extraída com sucesso.');
       return;
     }
 
-    // Extract colors from the result field directly
-    const colors = analysisResult.output.result;
+    // Use the combined colors (which includes the eye iris data)
+    const colors = combinedResult.combinedColors;
     
     // If barba is detected, exclude mouth_contour and chin from classification
-    const colorsForClassification = barbaDetected 
+    const colorsForClassification = combinedResult.barbaDetected 
       ? Object.fromEntries(Object.entries(colors).filter(([key]) => key !== 'mouth_contour' && key !== 'chin'))
       : colors;
 
@@ -118,17 +217,32 @@ const ColoracaoSimplificado: React.FC = () => {
     try {
       console.log('Starting classification...');
       console.log('Sending colors:', colorsForClassification);
-      
-      const result = await ColoracaoSimplificadoService.classifyColors(
-        colorsForClassification,
-        (status) => {
-          console.log('Classification status:', status);
-          setClassificationStatus(status);
+
+      let result;
+      try {
+        result = await ColoracaoSimplificadoService.classifyColors(
+          colorsForClassification,
+          (status) => {
+            console.log('Classification status:', status);
+            setClassificationStatus(status);
+          }
+        );
+      } catch (error) {
+        console.error('Error during final classification:', error);
+        setClassificationStatus('Erro na classificação');
+        // Try to extract a user-friendly error message
+        let message = 'Erro durante a classificação';
+        if (error && typeof error === 'object') {
+          if (error instanceof Error) {
+            message = error.message;
+          } else if ('error' in error && typeof error.error === 'string') {
+            message = error.error;
+          }
         }
-      );
-      
-      console.log('Classification result:', result);
-      
+        setError(`[CLASSIFICAÇÃO] ${message}`);
+        return;
+      }
+
       if (result?.status === 'COMPLETED') {
         setClassificationStatus('Classificação concluída!');
         setFinalResults(result);
@@ -138,10 +252,6 @@ const ColoracaoSimplificado: React.FC = () => {
         setClassificationStatus('Classificação concluída com formato inesperado');
         alert('Classificação concluída, mas o formato do resultado é inesperado. Verifique o console para mais detalhes.');
       }
-    } catch (error) {
-      console.error('Error during final classification:', error);
-      setClassificationStatus('Erro na classificação');
-      alert(`Erro durante a classificação: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       setIsClassifying(false);
     }
@@ -176,7 +286,7 @@ const ColoracaoSimplificado: React.FC = () => {
   );
 
   const renderTabs = () => {
-    if (!analysisResult) return null;
+    if (!combinedResult) return null;
 
     return (
       <div className="flex justify-center mb-6">
@@ -210,14 +320,14 @@ const ColoracaoSimplificado: React.FC = () => {
   };
 
   const renderExtractionResults = () => {
-    if (!analysisResult) return null;
+    if (!combinedResult) return null;
 
     // With new structure, all regions in details are successful
-    const successfulRegions = Object.entries(analysisResult.output.details) as [string, RegionDetail][];
+    const successfulRegions = Object.entries(combinedResult.frontalResult.output.details) as [string, RegionDetail][];
     
     // No failed regions in new structure - all regions are in details or not present at all
     const expectedRegions = Object.keys(regionNames);
-    const presentRegions = Object.keys(analysisResult.output.details);
+    const presentRegions = Object.keys(combinedResult.frontalResult.output.details);
     const missingRegions = expectedRegions.filter(region => !presentRegions.includes(region));
 
     return (
@@ -241,34 +351,27 @@ const ColoracaoSimplificado: React.FC = () => {
           </div>
         )}
 
-        {/* Original extraction results - only for successful regions */}
+        {/* Images, color summary, and timing display */}
         {successfulRegions.length > 0 && (
           <>
             <div className="flex flex-col md:flex-row gap-8 mb-6">
+              {/* Images */}
               <div className="text-center md:flex-1">
+                <h4 className="text-lg font-semibold mb-4">Imagem Frontal</h4>
                 <img
-                  src={analysisResult.output.image_url}
-                  alt="Imagem analisada"
+                  src={combinedResult.frontalResult.output.image_url}
+                  alt="Imagem frontal analisada"
                   className="max-w-xs mx-auto rounded-lg shadow-md mb-4 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => window.open(analysisResult.output.image_url, '_blank')}
+                  onClick={() => window.open(combinedResult.frontalResult.output.image_url, '_blank')}
                 />
-                <p className="text-sm text-gray-600">
-                  Regiões extraídas: { (barbaDetected ? successfulRegions.filter(([k]) => k !== 'mouth_contour' && k !== 'chin').length : successfulRegions.length)}/{expectedRegions.length}
-                </p>
               </div>
 
-              <div className="md:flex-1">
+              {/* Color summary component (added back, new color values) */}
+              <div className="md:flex-1 flex flex-col justify-center">
                 <div className="space-y-3">
-                  {barbaDetected && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
-                      Barba detectada — os itens "Contorno da Boca" e "Queixo" foram omitidos da lista de regiões.
-                    </div>
-                  )}
-
-                  {(
-                    barbaDetected
-                      ? successfulRegions.filter(([regionKey]) => regionKey !== 'mouth_contour' && regionKey !== 'chin')
-                      : successfulRegions
+                  {(barbaDetected
+                    ? successfulRegions.filter(([regionKey]) => regionKey !== 'mouth_contour' && regionKey !== 'chin')
+                    : successfulRegions
                   ).map(([regionKey, regionData]) => (
                     <div key={regionKey} className="text-center">
                       <span className="text-sm font-medium text-gray-700 mt-1 block">
@@ -282,16 +385,44 @@ const ColoracaoSimplificado: React.FC = () => {
                   ))}
                 </div>
               </div>
+
+              <div className="text-center md:flex-1">
+                <h4 className="text-lg font-semibold mb-4">Imagem do Olho</h4>
+                <img
+                  src={combinedResult.eyeResult.output.image_url}
+                  alt="Imagem do olho analisada"
+                  className="max-w-xs mx-auto rounded-lg shadow-md mb-4 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => window.open(combinedResult.eyeResult.output.image_url, '_blank')}
+                />
+              </div>
+            </div>
+
+            <div className="text-center mb-6">
+              <p className="text-sm text-gray-600">
+                Regiões extraídas: {(combinedResult.barbaDetected ? successfulRegions.filter(([k]) => k !== 'mouth_contour' && k !== 'chin').length : successfulRegions.length)}/{expectedRegions.length}
+              </p>
+                <div className="text-xs text-gray-500 mt-2 space-y-1">
+                  <p>⚡ Tempo frontal: {(combinedResult.frontalResult.total_time_seconds ?? 0).toFixed(1)}s</p>
+                  <p>⚡ Tempo olho: {(combinedResult.eyeResult.total_time_seconds ?? 0).toFixed(1)}s</p>
+                </div>
+              {combinedResult.barbaDetected && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800 mt-4">
+                  Barba detectada — os itens "Contorno da Boca" e "Queixo" foram omitidos da classificação.
+                </div>
+              )}
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {(barbaDetected
+              {(combinedResult.barbaDetected
                 ? successfulRegions.filter(([regionKey]) => regionKey !== 'mouth_contour' && regionKey !== 'chin')
                 : successfulRegions
               ).map(([regionKey, regionData]) => (
                 <div key={regionKey} className="bg-gray-50 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-800 mb-3">
                     {regionNames[regionKey as keyof typeof regionNames]}
+                    {regionKey === 'iris' && combinedResult.eyeResult.output.result.iris && (
+                      <span className="text-xs text-blue-600 ml-2">(do olho)</span>
+                    )}
                   </h4>
 
                   {renderColorPalette(regionData)}
@@ -301,8 +432,8 @@ const ColoracaoSimplificado: React.FC = () => {
                       className="w-full h-8 rounded border border-gray-300"
                       style={{ backgroundColor: regionData.color_palette.result }}
                     />
-                    <span className="text-sm font-medium text-gray-700">
-                      Cor principal: {regionData.color_palette.result}
+                    <span className="text-sm font-medium text-gray-700 mt-2 block">
+                      Cor final: {regionData.color_palette.result}
                     </span>
                   </div>
                 </div>
@@ -318,8 +449,8 @@ const ColoracaoSimplificado: React.FC = () => {
               Nenhuma região foi detectada
             </h3>
             <p className="text-red-600">
-              A análise não conseguiu detectar nenhuma região facial na imagem. 
-              Tente com uma imagem diferente com melhor qualidade e iluminação.
+              A análise não conseguiu detectar nenhuma região facial nas imagens. 
+              Tente com imagens diferentes com melhor qualidade e iluminação.
             </p>
           </div>
         )}
@@ -334,13 +465,7 @@ const ColoracaoSimplificado: React.FC = () => {
       <AnalysisResultsTab 
         finalResults={finalResults}
         onTryAgain={() => {
-          setAnalysisResult(null);
-          setFinalResults(null);
-          setImageUrl('');
-          setIsImageValid(false);
-          setError('');
-          setBarbaDetected(false);
-          setActiveTab('extraction');
+          handleRestart();
         }}
       />
     );
@@ -352,8 +477,27 @@ const ColoracaoSimplificado: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
+            {/* Progress indicator */}
+            {currentStep !== 'results' && (
+              <div className="flex items-center space-x-4">
+                <div className={`flex items-center space-x-2 ${currentStep === 'frontal' ? 'text-[#947B62]' : 'text-gray-400'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'frontal' ? 'bg-[#947B62] text-white' : 'bg-gray-200'}`}>
+                    1
+                  </div>
+                  <span className="font-medium">Imagem Frontal</span>
+                </div>
+                <div className="w-8 h-px bg-gray-300"></div>
+                <div className={`flex items-center space-x-2 ${currentStep === 'eye' ? 'text-[#947B62]' : 'text-gray-400'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'eye' ? 'bg-[#947B62] text-white' : 'bg-gray-200'}`}>
+                    2
+                  </div>
+                  <span className="font-medium">Imagem do Olho</span>
+                </div>
+              </div>
+            )}
+            
             {/* Action Buttons - only show when we have analysis results */}
-            {analysisResult && (
+            {combinedResult && (
               <div className="flex gap-4 ml-auto">
                 <button
                   onClick={handleStartClassification}
@@ -368,14 +512,7 @@ const ColoracaoSimplificado: React.FC = () => {
                 </button>
                 
                 <button
-                  onClick={() => {
-                    setAnalysisResult(null);
-                    setFinalResults(null);
-                    setImageUrl('');
-                    setIsImageValid(false);
-                    setError('');
-                    setActiveTab('extraction');
-                  }}
+                  onClick={handleRestart}
                   className="px-6 py-2 rounded-lg bg-gray-600 text-white font-semibold hover:bg-gray-700 transition-colors"
                 >
                   Nova Extração
@@ -401,52 +538,107 @@ const ColoracaoSimplificado: React.FC = () => {
         )}
 
         {/* Results Section */}
-        {!isAnalyzing && !isClassifying && analysisResult && (
+        {!isAnalyzing && !isClassifying && currentStep === 'results' && (
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Resultados da Extração</h2>
-            
-            {/* Tabs */}
-            {renderTabs()}
-            
-            {/* Tab Content */}
-            {activeTab === 'extraction' && renderExtractionResults()}
-            {activeTab === 'classification' && renderClassificationResults()}
+            {/* Show error if present */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-center">
+                {error}
+              </div>
+            )}
+            {/* Only show tabs/results if we have a result */}
+            {combinedResult && (
+              <>
+                {renderTabs()}
+                {/* Tab Content */}
+                {activeTab === 'extraction' && renderExtractionResults()}
+                {activeTab === 'classification' && renderClassificationResults()}
+              </>
+            )}
           </div>
         )}
 
-        {/* Extraction Section */}
-        {!isAnalyzing && !isClassifying && !analysisResult && (
+        {/* Step 1: Frontal Image Selection */}
+        {!isAnalyzing && !isClassifying && currentStep === 'frontal' && (
           <div className="bg-white rounded-lg shadow-sm mb-6 p-6">
             <div className="space-y-6">
               <ImageUploadSection
-                imageUrl={imageUrl}
-                onImageUrlChange={handleImageUrlChange}
-                isImageValid={isImageValid}
-                onImageValidityChange={handleImageValidityChange}
+                imageUrl={frontalImageUrl}
+                onImageUrlChange={handleFrontalImageUrlChange}
+                isImageValid={isFrontalImageValid}
+                onImageValidityChange={handleFrontalImageValidityChange}
                 disabled={isAnalyzing}
-                title="Upload da Imagem"
+                title="Upload da Imagem Frontal"
+                uploadType="extracao-frontal"
                 sampleImages={{
-                  urls: sampleImageUrls,
-                  onSampleClick: handleGridButtonClick
+                  urls: frontalSampleUrls,
+                  onSampleClick: handleFrontalGridButtonClick
                 }}
               />
 
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                   {error}
                 </div>
               )}
 
               <div className="flex justify-center">
                 <button
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing || !imageUrl.trim() || !isImageValid}
-                  className={`px-8 py-3 rounded-lg font-semibold transition-colors ${isAnalyzing || !imageUrl.trim() || !isImageValid
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-[#947B62] text-white hover:bg-[#7a624e]'
-                    }`}
+                  onClick={handleNextStep}
+                  disabled={isAnalyzing || !frontalImageUrl.trim() || !isFrontalImageValid}
+                  className={`px-8 py-3 rounded-lg font-semibold transition-colors ${isAnalyzing || !frontalImageUrl.trim() || !isFrontalImageValid
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#947B62] text-white hover:bg-[#7a6650]'
+                  }`}
                 >
-                  {isAnalyzing ? 'Analisando...' : 'Analisar Imagem'}
+                  {isAnalyzing ? 'Analisando...' : 'Próximo: Selecionar Imagem do Olho'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Eye Image Selection */}
+        {!isAnalyzing && !isClassifying && currentStep === 'eye' && (
+          <div className="bg-white rounded-lg shadow-sm mb-6 p-6">
+            <div className="space-y-6">
+              <ImageUploadSection
+                imageUrl={eyeImageUrl}
+                onImageUrlChange={handleEyeImageUrlChange}
+                isImageValid={isEyeImageValid}
+                onImageValidityChange={handleEyeImageValidityChange}
+                disabled={isAnalyzing}
+                title="Upload da Imagem do Olho (Close-up)"
+                uploadType="extracao-olho"
+                sampleImages={{
+                  urls: eyeSampleUrls,
+                  onSampleClick: handleEyeGridButtonClick
+                }}
+              />
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+
+              <div className="flex justify-center space-x-4">
+                <button
+                  onClick={handlePreviousStep}
+                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Voltar
+                </button>
+                <button
+                  onClick={handleNextStep}
+                  disabled={isAnalyzing || !eyeImageUrl.trim() || !isEyeImageValid}
+                  className={`px-8 py-3 rounded-lg font-semibold transition-colors ${isAnalyzing || !eyeImageUrl.trim() || !isEyeImageValid
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#947B62] text-white hover:bg-[#7a6650]'
+                  }`}
+                >
+                  {isAnalyzing ? 'Analisando...' : 'Analisar Imagens'}
                 </button>
               </div>
             </div>

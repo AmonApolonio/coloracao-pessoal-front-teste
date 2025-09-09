@@ -78,6 +78,7 @@ export class N8nUploadService {
    */
   static async uploadFile(
     file: File,
+    type: 'extracao-frontal' | 'extracao-olho' = 'extracao-frontal',
     onProgress?: (progress: number) => void
   ): Promise<UploadResponse> {
     try {
@@ -87,6 +88,7 @@ export class N8nUploadService {
       // Create FormData for upload
       const formData = new FormData();
       formData.append('file', compressedFile);
+      formData.append('type', type);
       
       // Generate a unique filename
       const timestamp = Date.now();
@@ -140,7 +142,7 @@ export class N8nUploadService {
         
         // Configure request
         xhr.open('POST', uploadUrl);
-        xhr.timeout = 60000; // 60 seconds timeout
+        xhr.timeout = 300000; // 5 minutes timeout for image uploads
         
         // Add Basic authentication headers (same as ApiClient)
         const username = EnvConfig.getEnvVariable('VITE_USERNAME');
@@ -163,6 +165,7 @@ export class N8nUploadService {
    */
   static async uploadFiles(
     files: File[],
+    type: 'extracao-frontal' | 'extracao-olho' = 'extracao-frontal',
     onProgress?: (fileIndex: number, progress: number, totalProgress: number) => void
   ): Promise<UploadResponse[]> {
     const results: UploadResponse[] = [];
@@ -171,7 +174,7 @@ export class N8nUploadService {
       const file = files[i];
       
       try {
-        const result = await this.uploadFile(file, (progress) => {
+        const result = await this.uploadFile(file, type, (progress) => {
           if (onProgress) {
             const totalProgress = Math.round(((i + progress / 100) / files.length) * 100);
             onProgress(i, progress, totalProgress);

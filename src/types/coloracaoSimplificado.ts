@@ -3,7 +3,7 @@ import { ParameterMatch } from './coloracaoResults';
 
 export interface ColoracaoSimplificadoRequest {
   input: {
-    type: 'extracao';
+    type: 'extracao' | 'extracao-frontal' | 'extracao-olho';
     image_url: string;
   };
 }
@@ -61,6 +61,9 @@ export interface ColoracaoSimplificadoResponse {
     image_url: string;
     result: ColoracaoSimplificadoResult;
   };
+  processing_time_seconds?: number;
+  queue_time_seconds?: number;
+  total_time_seconds?: number;
   status: 'COMPLETED' | 'IN_PROGRESS' | 'FAILED' | 'IN_QUEUE';
 }
 
@@ -77,6 +80,13 @@ export interface ColoracaoClassificacaoRequest {
     type: 'classificacao';
     colors: Record<string, string>;
   };
+}
+
+export interface CombinedAnalysisResult {
+  frontalResult: ColoracaoSimplificadoResponse;
+  eyeResult: ColoracaoSimplificadoResponse;
+  combinedColors: Record<string, string>;
+  barbaDetected: boolean;
 }
 
 export interface ColoracaoClassificacaoResponse {
