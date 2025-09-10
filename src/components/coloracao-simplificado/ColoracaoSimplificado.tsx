@@ -372,17 +372,23 @@ const ColoracaoSimplificado: React.FC = () => {
                   {(barbaDetected
                     ? successfulRegions.filter(([regionKey]) => regionKey !== 'mouth_contour' && regionKey !== 'chin')
                     : successfulRegions
-                  ).map(([regionKey, regionData]) => (
-                    <div key={regionKey} className="text-center">
-                      <span className="text-sm font-medium text-gray-700 mt-1 block">
-                        {regionNames[regionKey as keyof typeof regionNames]}: {regionData.color_palette.result}
-                      </span>
-                      <div
-                        className="w-full h-8 rounded border border-gray-300"
-                        style={{ backgroundColor: regionData.color_palette.result }}
-                      />
-                    </div>
-                  ))}
+                  ).map(([regionKey, regionData]) => {
+                    const irisPalette = regionKey === 'iris' && combinedResult.eyeResult.output.details.iris
+                      ? combinedResult.eyeResult.output.details.iris.color_palette
+                      : null;
+                    const colorResult = irisPalette ? irisPalette.result : regionData.color_palette.result;
+                    return (
+                      <div key={regionKey} className="text-center">
+                        <span className="text-sm font-medium text-gray-700 mt-1 block">
+                          {regionNames[regionKey as keyof typeof regionNames]}: {colorResult}
+                        </span>
+                        <div
+                          className="w-full h-8 rounded border border-gray-300"
+                          style={{ backgroundColor: colorResult }}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -420,21 +426,30 @@ const ColoracaoSimplificado: React.FC = () => {
                 <div key={regionKey} className="bg-gray-50 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-800 mb-3">
                     {regionNames[regionKey as keyof typeof regionNames]}
-                    {regionKey === 'iris' && combinedResult.eyeResult.output.result.iris && (
-                      <span className="text-xs text-blue-600 ml-2">(do olho)</span>
-                    )}
                   </h4>
 
-                  {renderColorPalette(regionData)}
+                  {regionKey === 'iris' && combinedResult.eyeResult.output.details.iris
+                    ? renderColorPalette({ color_palette: combinedResult.eyeResult.output.details.iris.color_palette })
+                    : renderColorPalette(regionData)}
 
                   <div className="mt-3 text-center">
-                    <div
-                      className="w-full h-8 rounded border border-gray-300"
-                      style={{ backgroundColor: regionData.color_palette.result }}
-                    />
-                    <span className="text-sm font-medium text-gray-700 mt-2 block">
-                      Cor final: {regionData.color_palette.result}
-                    </span>
+                    {(() => {
+                      const irisPalette = regionKey === 'iris' && combinedResult.eyeResult.output.details.iris
+                        ? combinedResult.eyeResult.output.details.iris.color_palette
+                        : null;
+                      const colorResult = irisPalette ? irisPalette.result : regionData.color_palette.result;
+                      return (
+                        <>
+                          <div
+                            className="w-full h-8 rounded border border-gray-300"
+                            style={{ backgroundColor: colorResult }}
+                          />
+                          <span className="text-sm font-medium text-gray-700 mt-2 block">
+                            Cor final: {colorResult}
+                          </span>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
