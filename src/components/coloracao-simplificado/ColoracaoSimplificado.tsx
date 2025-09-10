@@ -462,12 +462,7 @@ const ColoracaoSimplificado: React.FC = () => {
     if (!finalResults) return null;
 
     return (
-      <AnalysisResultsTab 
-        finalResults={finalResults}
-        onTryAgain={() => {
-          handleRestart();
-        }}
-      />
+      <AnalysisResultsTab finalResults={finalResults} />
     );
   };
 
@@ -540,7 +535,7 @@ const ColoracaoSimplificado: React.FC = () => {
         {/* Results Section */}
         {!isAnalyzing && !isClassifying && currentStep === 'results' && (
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Resultados da Extração</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Resultados</h2>
             {/* Show error if present */}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-center">

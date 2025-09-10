@@ -1,6 +1,3 @@
-
-import { ParameterMatch } from './coloracaoResults';
-
 export interface ColoracaoSimplificadoRequest {
   input: {
     type: 'extracao' | 'extracao-frontal' | 'extracao-olho';
@@ -90,85 +87,44 @@ export interface CombinedAnalysisResult {
 }
 
 export interface ColoracaoClassificacaoResponse {
-  delayTime?: number;
-  executionTime?: number;
   id: string;
-  logs: {};
+  logs: Record<string, unknown>;
   output: {
     colors: Record<string, string>;
     details: {
-      approximation_flags: string[];
-      decision_table: {
-        season_scores: Record<string, number>;
-        seasons: Record<string, {
-          score: number;
-          contraste: ParameterMatch;
-          temperatura: ParameterMatch;
-          profundidade: ParameterMatch;
-          intensidade: ParameterMatch;
-        }>;
+      'brightness-details': {
+        average_brightness: number;
+        cheek_brightness: number;
+        chin_brightness: number;
+        eyebrows_brightness: number;
+        forehead_brightness: number;
+        hair_root_brightness: number;
+        iris_brightness: number;
+        mouth_brightness: number;
+        mouth_contour_brightness: number;
+        under_eye_skin_brightness: number;
       };
-      dimensional_analysis: {
-        contraste: {
-          primaryClassification: string;
-          secondClassification: string;
-          skin_L: number;
-          hair_L: number;
-          eye_L: number;
-          delta_l: number;
-        };
-        temperatura: {
-          primaryClassification: string;
-          secondClassification: string;
-          hue: number;
-          approximate: boolean;
-          skin_temperatura: string;
-          hair_temperatura: string;
-          eye_temperatura: string;
-          skin_hue: number;
-          hair_hue: number;
-          eye_hue: number;
-        };
-        profundidade: {
-          primaryClassification: string;
-          secondClassification: string;
-          approximate: boolean;
-          skin_reference_l: number;
-          under_eye_l: number;
-          mouth_contour_l: number;
-          delta_under_eye: number;
-          delta_mouth_contour: number;
-          under_eye_classification: string;
-          mouth_contour_classification: string;
-        };
-        intensidade: {
-          primaryClassification: string;
-          secondClassification: string;
-          C_value: number;
-          approximate: boolean;
-          skin_intensidade: string;
-          skin_c_value: number;
-          hair_intensidade: string;
-          hair_c_value: number;
-          eye_intensidade: string;
-          eye_c_value: number;
-        };
+      'saturation-details': {
+        average_saturation: number;
+        cheek_saturation: number;
+        chin_saturation: number;
+        eyebrows_saturation: number;
+        forehead_saturation: number;
+        hair_root_saturation: number;
+        iris_saturation: number;
+        mouth_contour_saturation: number;
+        mouth_saturation: number;
+        under_eye_skin_saturation: number;
       };
-      top_candidates: Array<{
-        confidence: number;
-        exact_match: boolean;
-        match_score: number;
-        season: string;
-        used_primary: string[];
-        used_secondary: string[];
-      }>;
     };
     result: {
-      confidence: number;
-      explanation: string;
+      brightness: number;
+      saturation: number;
       season: string;
     };
   };
+  processing_time_seconds?: number;
+  queue_time_seconds?: number;
   status: 'COMPLETED' | 'IN_PROGRESS' | 'FAILED' | 'IN_QUEUE';
-  workerId?: string;
+  total_time_seconds?: number;
 }
