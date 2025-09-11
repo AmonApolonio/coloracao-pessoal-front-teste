@@ -84,26 +84,76 @@ export class N8nUploadService {
     try {
       // Compress the image before upload
       const compressedFile = await this.compressImage(file, 1200, 0.8);
-      
+
       // Create FormData for upload
       const formData = new FormData();
       formData.append('file', compressedFile);
       formData.append('type', type);
-      
+
       // Generate a unique filename
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(2, 15);
       const extension = compressedFile.name.split('.').pop() || 'jpg';
       const fileName = `coloracao-${timestamp}-${randomId}.${extension}`;
       formData.append('fileName', fileName);
-      
+
       // Get upload endpoint from environment
       const uploadUrl = getApiUrl('VITE_N8N_UPLOAD_URL');
-      
-      // Create XMLHttpRequest for progress tracking
-      const xhr = new XMLHttpRequest();
-      
+
+      // For 'extracao-olho', keep the current flow
+      if (type === 'extracao-olho') {
+        const xhr = new XMLHttpRequest();
+        return new Promise<UploadResponse>((resolve, reject) => {
+          // Track upload progress
+          xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable && onProgress) {
+              const progress = Math.round((event.loaded / event.total) * 100);
+              onProgress(progress);
+            }
+          });
+          // Handle response
+          xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const response = JSON.parse(xhr.responseText);
+                resolve({
+                  url: response.image_url || response.url || response.fileUrl,
+                  key: response.key || fileName,
+                  success: true,
+                  message: 'Upload realizado com sucesso'
+                });
+              } catch (error) {
+                reject(new Error('Erro ao processar resposta do servidor'));
+              }
+            } else {
+              reject(new Error(`Erro no upload: ${xhr.status} ${xhr.statusText}`));
+            }
+          });
+          // Handle errors
+          xhr.addEventListener('error', () => {
+            reject(new Error('Erro de rede durante o upload'));
+          });
+          xhr.addEventListener('timeout', () => {
+            reject(new Error('Timeout no upload'));
+          });
+          // Configure request
+          xhr.open('POST', uploadUrl);
+          xhr.timeout = 300000; // 5 minutes timeout for image uploads
+          // Add Basic authentication headers (same as ApiClient)
+          const username = EnvConfig.getEnvVariable('VITE_USERNAME');
+          const password = EnvConfig.getEnvVariable('VITE_TOKEN');
+          if (username && password) {
+            const credentials = btoa(`${username}:${password}`);
+            xhr.setRequestHeader('Authorization', `Basic ${credentials}`);
+          }
+          // Send request
+          xhr.send(formData);
+        });
+      }
+
+      // For 'extracao-frontal', use the new polling flow
       return new Promise<UploadResponse>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
         // Track upload progress
         xhr.upload.addEventListener('progress', (event) => {
           if (event.lengthComputable && onProgress) {
@@ -111,18 +161,69 @@ export class N8nUploadService {
             onProgress(progress);
           }
         });
-        
-        // Handle response
         xhr.addEventListener('load', () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             try {
               const response = JSON.parse(xhr.responseText);
-              resolve({
-                url: response.image_url || response.url || response.fileUrl,
-                key: response.key || fileName,
-                success: true,
-                message: 'Upload realizado com sucesso'
-              });
+              // If response has id and not image_url, start polling
+              if (response.id && !response.image_url && !response.url && !response.fileUrl) {
+                const pollId = response.id;
+                let pollAttempts = 0;
+                const maxPollAttempts = 60; // e.g., poll for up to 2 minutes (2s interval)
+                const pollInterval = 2000;
+
+                const poll = () => {
+                  pollAttempts++;
+                  // Build GET URL with id param
+                  const pollUrl = `${uploadUrl}?id=${encodeURIComponent(pollId)}`;
+                  // Use fetch for polling
+                  fetch(pollUrl, {
+                    method: 'GET',
+                    headers: (() => {
+                      const headers: Record<string, string> = {};
+                      const username = EnvConfig.getEnvVariable('VITE_USERNAME');
+                      const password = EnvConfig.getEnvVariable('VITE_TOKEN');
+                      if (username && password) {
+                        const credentials = btoa(`${username}:${password}`);
+                        headers['Authorization'] = `Basic ${credentials}`;
+                      }
+                      return headers;
+                    })(),
+                  })
+                    .then(async (res) => {
+                      if (!res.ok) throw new Error(`Erro ao consultar status: ${res.status}`);
+                      const pollResponse = await res.json();
+                      if (pollResponse.image_url) {
+                        resolve({
+                          url: pollResponse.image_url,
+                          key: pollId,
+                          success: true,
+                          message: 'Upload realizado com sucesso'
+                        });
+                      } else if (pollAttempts < maxPollAttempts && (pollResponse.status === 'IN_QUEUE' || pollResponse.status === 'IN_PROGRESS')) {
+                        setTimeout(poll, pollInterval);
+                      } else if (pollAttempts >= maxPollAttempts) {
+                        reject(new Error('Timeout ao aguardar processamento da imagem.'));
+                      } else {
+                        reject(new Error('Erro inesperado ao processar upload.'));
+                      }
+                    })
+                    .catch((err) => {
+                      reject(new Error(`Erro ao consultar status do upload: ${err instanceof Error ? err.message : err}`));
+                    });
+                };
+                poll();
+              } else if (response.image_url || response.url || response.fileUrl) {
+                // Fallback: if image_url is present, resolve immediately
+                resolve({
+                  url: response.image_url || response.url || response.fileUrl,
+                  key: response.key || fileName,
+                  success: true,
+                  message: 'Upload realizado com sucesso'
+                });
+              } else {
+                reject(new Error('Resposta inesperada do servidor.'));
+              }
             } catch (error) {
               reject(new Error('Erro ao processar resposta do servidor'));
             }
@@ -130,20 +231,14 @@ export class N8nUploadService {
             reject(new Error(`Erro no upload: ${xhr.status} ${xhr.statusText}`));
           }
         });
-        
-        // Handle errors
         xhr.addEventListener('error', () => {
           reject(new Error('Erro de rede durante o upload'));
         });
-        
         xhr.addEventListener('timeout', () => {
           reject(new Error('Timeout no upload'));
         });
-        
-        // Configure request
         xhr.open('POST', uploadUrl);
         xhr.timeout = 300000; // 5 minutes timeout for image uploads
-        
         // Add Basic authentication headers (same as ApiClient)
         const username = EnvConfig.getEnvVariable('VITE_USERNAME');
         const password = EnvConfig.getEnvVariable('VITE_TOKEN');
@@ -151,8 +246,6 @@ export class N8nUploadService {
           const credentials = btoa(`${username}:${password}`);
           xhr.setRequestHeader('Authorization', `Basic ${credentials}`);
         }
-        
-        // Send request
         xhr.send(formData);
       });
     } catch (error) {
