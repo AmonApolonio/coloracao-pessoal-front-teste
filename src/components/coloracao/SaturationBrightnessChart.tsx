@@ -8,6 +8,7 @@ import { ParentSize } from '@visx/responsive';
 import { useTooltip, TooltipWithBounds, defaultStyles } from '@visx/tooltip';
 import { localPoint } from '@visx/event';
 import { ColoracaoClassificacaoResponse } from '../../types/coloracaoSimplificado';
+import { COLORACAO_AREAS } from '../../config/coloracaoAreas';
 
 interface ChartDataPoint {
   region: string;
@@ -146,81 +147,7 @@ const ChartInner: React.FC<ChartInnerProps> = ({
     range: [yMax, 0], // Inverted for SVG coordinates
   });
 
-  // Define coloração areas with coordinates (saturation, brightness)
-  const coloracaoAreas = [
-    {
-      name: 'Verão Claro',
-      points: [[0, 100], [25, 75], [50, 75], [50, 100]],
-      color: '#000000ff',
-      strokeColor: '#ffffffff',
-    },
-    {
-      name: 'Verão Frio',
-      points: [[0, 100], [0, 50], [25, 50], [25, 75]],
-      color: '#000000ff',
-      strokeColor: '#ffffffff',
-    },
-    {
-      name: 'Primavera Clara',
-      points: [[50, 100], [50, 75], [75, 75], [100, 100]],
-      color: '#000000ff',
-      strokeColor: '#ffffffff',
-    },
-    {
-      name: 'Primavera Quente',
-      points: [[75, 75], [75, 50], [100, 50], [100, 100]],
-      color: '#000000ff',
-      strokeColor: '#ffffffff',
-    },
-    {
-      name: 'Inverno Frio',
-      points: [[0, 50], [0, 0], [25, 25], [25, 50]],
-      color: '#000000ff',
-      strokeColor: '#ffffffff',
-    },
-    {
-      name: 'Inverno Escuro',
-      points: [[25, 25], [0, 0], [50, 0], [50, 25]],
-      color: '#000000ff',
-      strokeColor: '#ffffffff',
-    },
-    {
-      name: 'Outono Escuro',
-      points: [[50, 25], [50, 0], [100, 0], [75, 25]],
-      color: '#000000ff',
-      strokeColor: '#ffffffff',
-    },
-    {
-      name: 'Outono Quente',
-      points: [[75, 50], [75, 25], [100, 0], [100, 50]],
-      color: '#000000ff',
-      strokeColor: '#ffffffff',
-    },
-    {
-      name: 'Verão Suave',
-      points: [[25, 75], [25, 50], [50, 50], [50, 75]],
-      color: '#000000ff',
-      strokeColor: '#ffffffff',
-    },
-    {
-      name: 'Primavera Brilhante',
-      points: [[50, 75], [50, 50], [75, 50], [75, 75]],
-      color: '#000000ff',
-      strokeColor: '#ffffffff',
-    },
-    {
-      name: 'Inverno Brilhante',
-      points: [[25, 50], [25, 25], [50, 25], [50, 50]],
-      color: '#000000ff',
-      strokeColor: '#ffffffff',
-    },
-    {
-      name: 'Outono Suave',
-      points: [[50, 50], [50, 25], [75, 25], [75, 50]],
-      color: '#000000ff',
-      strokeColor: '#ffffffff',
-    },
-  ];
+  // Use coloração areas from config file
 
   // Helper function to create path string from points
   const createPath = (points: number[][]) => {
@@ -285,7 +212,7 @@ const ChartInner: React.FC<ChartInnerProps> = ({
               strokeOpacity={0.3}
             />
             {/* Coloração areas - with transparent fill to keep gradient visible */}
-            {coloracaoAreas.map((area, index) => {
+            {COLORACAO_AREAS.map((area, index) => {
               const isHoveredArea = hoveredArea === area.name;
               return (
                 <g key={`area-${index}`}>
