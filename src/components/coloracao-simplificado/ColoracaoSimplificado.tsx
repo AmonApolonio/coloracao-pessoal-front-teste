@@ -38,44 +38,76 @@ const ColoracaoSimplificado: React.FC = () => {
 
   // Sample image URLs for frontal face
   const frontalSampleUrls = [
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-brilhante/teste1/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-brilhante/teste2/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/teste1/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/teste2/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/teste3/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/outono-escuro/teste1/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/outono-escuro/teste2/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/teste1/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/teste2/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/teste3/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/teste4/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/teste5/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/teste6/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/teste1/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/teste2/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/teste1/frontal_tbase.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/teste2/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-brilhante/gabriela/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-brilhante/isa/frontal_tbase.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/alessandra/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/camila/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/lorena_bt/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/mara/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/matheus/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/ted/frontal_tbase.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-frio/gabriel/frontal_tbase.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/outono-escuro/larissa/frontal_tbase.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/outono-quente/lara/frontal_tbase.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/sem-cartela/jonatan/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/sem-cartela/valeria/frontal_tbase.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/bia/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/bianca/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/henrique/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/mariana/frontal_tbase.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/inacio/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/larissa/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/livia/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/lorena/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/pollyana/frontal_tbase.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/alexandre/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/camila-oliveira/frontal_tbase.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/carol/frontal_tbase.png',
   ];
 
   // Sample image URLs for eye close-up
   const eyeSampleUrls = [
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-brilhante/teste1/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-brilhante/teste2/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/teste1/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/teste2/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/teste3/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/outono-escuro/teste1/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/outono-escuro/teste2/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/teste1/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/teste2/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/teste3/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/teste4/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/teste5/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/teste6/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/teste1/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/teste2/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/teste1/olho.png',
-    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/teste2/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-brilhante/gabriela/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-brilhante/isa/olho.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/alessandra/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/camila/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/lorena_bt/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/mara/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/matheus/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/ted/olho.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-frio/gabriel/olho.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/outono-escuro/larissa/olho.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/outono-quente/lara/olho.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/sem-cartela/jonatan/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/sem-cartela/valeria/olho.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/bia/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/bianca/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/henrique/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/mariana/olho.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/inacio/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/larissa/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/livia/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/lorena/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/pollyana/olho.png',
+
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/alexandre/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/camila-oliveira/olho.png',
+    'https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/carol/olho.png',
   ];
 
   const handleFrontalImageUrlChange = (url: string) => {
