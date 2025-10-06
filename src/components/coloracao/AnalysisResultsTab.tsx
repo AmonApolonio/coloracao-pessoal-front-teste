@@ -12,19 +12,6 @@ const AnalysisResultsTab: React.FC<AnalysisResultsTabProps> = ({ finalResults })
     return null;
   }
 
-  // Region display names (same as ColoracaoSimplificado.tsx)
-  const regionNames: Record<string, string> = {
-    cheek: 'Bochecha',
-    chin: 'Queixo',
-    eyebrows: 'Sobrancelhas',
-    forehead: 'Testa',
-    hair_root: 'Raiz do Cabelo',
-    iris: 'Íris',
-    mouth: 'Boca',
-    mouth_contour: 'Contorno da Boca',
-    under_eye_skin: 'Pele Abaixo dos Olhos',
-  };
-
   const { result } = finalResults.output;
 
   // Helper to render the final result/season

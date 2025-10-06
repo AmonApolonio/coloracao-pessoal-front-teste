@@ -96,9 +96,8 @@ export interface ColoracaoClassificacaoResponse {
         average_brightness: number;
         cheek_brightness: number;
         chin_brightness: number;
-        eyebrows_brightness: number;
         forehead_brightness: number;
-        hair_root_brightness: number;
+        hair_brightness: number;
         iris_brightness: number;
         mouth_brightness: number;
         mouth_contour_brightness: number;
@@ -108,9 +107,8 @@ export interface ColoracaoClassificacaoResponse {
         average_saturation: number;
         cheek_saturation: number;
         chin_saturation: number;
-        eyebrows_saturation: number;
         forehead_saturation: number;
-        hair_root_saturation: number;
+        hair_saturation: number;
         iris_saturation: number;
         mouth_contour_saturation: number;
         mouth_saturation: number;

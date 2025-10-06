@@ -463,7 +463,7 @@ const ColoracaoSimplificado: React.FC = () => {
               )}
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {(combinedResult.barbaDetected
                 ? successfulRegions.filter(([regionKey]) => regionKey !== 'mouth_contour' && regionKey !== 'chin')
                 : successfulRegions
@@ -498,7 +498,7 @@ const ColoracaoSimplificado: React.FC = () => {
                   </div>
                 </div>
               ))}
-            </div>
+            </div> */}
           </>
         )}
 

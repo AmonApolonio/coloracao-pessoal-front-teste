@@ -82,9 +82,8 @@ const ChartInner: React.FC<ChartInnerProps> = ({
   const regionNames: Record<string, string> = {
     cheek: 'Bochecha',
     chin: 'Queixo',
-    eyebrows: 'Sobrancelhas',
     forehead: 'Testa',
-    hair_root: 'Raiz do Cabelo',
+    hair_root: 'Pelo (Cabelo e Sobrancelha)',
     iris: 'Íris',
     mouth: 'Boca',
     mouth_contour: 'Contorno da Boca',
@@ -108,12 +107,15 @@ const ChartInner: React.FC<ChartInnerProps> = ({
   
   // Add individual region points
   Object.entries(finalResults.output.colors).forEach(([region, color]) => {
-    const saturationKey = `${region}_saturation`;
-    const brightnessKey = `${region}_brightness`;
-    
+    let saturationKey = `${region}_saturation`;
+    let brightnessKey = `${region}_brightness`;
+    // Special case for hair_root: use hair_saturation and hair_brightness
+    if (region === 'hair_root') {
+      saturationKey = 'hair_saturation';
+      brightnessKey = 'hair_brightness';
+    }
     const saturation = finalResults.output.details['saturation-details'][saturationKey as keyof typeof finalResults.output.details['saturation-details']];
     const brightness = finalResults.output.details['brightness-details'][brightnessKey as keyof typeof finalResults.output.details['brightness-details']];
-    
     if (typeof saturation === 'number' && typeof brightness === 'number') {
       dataPoints.push({
         region,
