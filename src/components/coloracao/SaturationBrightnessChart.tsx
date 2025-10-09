@@ -80,14 +80,14 @@ const ChartInner: React.FC<ChartInnerProps> = ({
   };
   // Region display names (same as AnalysisResultsTab.tsx)
   const regionNames: Record<string, string> = {
-    cheek: 'Bochecha',
-    chin: 'Queixo',
-    forehead: 'Testa',
     hair_root: 'Pelo (Cabelo e Sobrancelha)',
-    iris: 'Íris',
-    mouth: 'Boca',
+    iris: 'Olho',
+    forehead: 'Testa',
+    cheek: 'Bochecha',
+    under_eye_skin: 'Cavidade ocular',
+    chin: 'Queixo',
     mouth_contour: 'Contorno da Boca',
-    under_eye_skin: 'Pele Abaixo dos Olhos',
+    mouth: 'Boca',
   };
 
   // Increase margins for a larger chart

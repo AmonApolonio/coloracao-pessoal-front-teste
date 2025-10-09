@@ -28,12 +28,31 @@ const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
   sampleImages
 }) => {
   const [activeTab, setActiveTab] = useState<'url' | 'upload'>('upload');
+  const [selectedSampleIndex, setSelectedSampleIndex] = useState<number | undefined>(undefined);
 
   const handleFileUploaded = (url: string) => {
     onImageUrlChange(url);
     onImageValidityChange(true);
+    // Clear selected sample when uploading a file
+    setSelectedSampleIndex(undefined);
     // Switch to URL tab to show the uploaded image
     setActiveTab('url');
+  };
+
+  const handleSampleClick = (index: number) => {
+    setSelectedSampleIndex(index);
+    if (sampleImages) {
+      sampleImages.onSampleClick(index);
+    }
+  };
+
+  const handleManualUrlChange = (url: string) => {
+    // Clear selected sample when manually entering URL
+    // Only clear if the URL doesn't match any sample URL
+    if (sampleImages && !sampleImages.urls.includes(url)) {
+      setSelectedSampleIndex(undefined);
+    }
+    onImageUrlChange(url);
   };
 
   return (
@@ -90,7 +109,7 @@ const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
             </p>
             <UrlImageInput
               imageUrl={imageUrl}
-              onImageUrlChange={onImageUrlChange}
+              onImageUrlChange={handleManualUrlChange}
               isImageValid={isImageValid}
               onImageValidityChange={onImageValidityChange}
               placeholder="Cole a URL da imagem aqui..."
@@ -104,24 +123,15 @@ const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
                 <h4 className="text-lg font-semibold mb-4">Ou escolha uma imagem de exemplo</h4>
                 <GridButtons
                   length={sampleImages.urls.length}
-                  onButtonClick={sampleImages.onSampleClick}
+                  onButtonClick={handleSampleClick}
+                  urls={sampleImages.urls}
+                  selectedIndex={selectedSampleIndex}
                 />
               </div>
             )}
           </div>
         )}
       </div>
-
-      {/* Helper Text */}
-      {/* <div className="text-xs text-gray-500 space-y-1">
-        <p>💡 <strong>Dica:</strong> Para melhores resultados, use imagens:</p>
-        <ul className="list-disc list-inside ml-4 space-y-1">
-          <li>Com boa iluminação natural</li>
-          <li>Com o rosto bem visível e centrado</li>
-          <li>Sem filtros ou maquiagem muito intensa</li>
-          <li>Em formato JPEG, PNG ou WebP</li>
-        </ul>
-      </div> */}
     </div>
   );
 };

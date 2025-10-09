@@ -1,7 +1,12 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onRestart?: () => void;
+  showRestart?: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ onRestart, showRestart = false }) => {
   const { logout } = useAuth();
 
   const handleLogout = () => {
@@ -26,12 +31,14 @@ const Header: React.FC = () => {
           </div>
           
           <div className="flex items-center">
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-gray-100 hover:bg-[#947B62] hover:text-white text-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors mr-2"
-            >
-              Voltar
-            </button>
+            {showRestart && onRestart && (
+              <button
+                onClick={onRestart}
+                className="bg-gray-100 hover:bg-[#947B62] hover:text-white text-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors mr-2"
+              >
+                Recomeçar
+              </button>
+            )}
             <button
               onClick={handleLogout}
               className="bg-gray-100 hover:bg-[#947B62] hover:text-white text-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors"

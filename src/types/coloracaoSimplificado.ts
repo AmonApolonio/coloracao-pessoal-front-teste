@@ -86,6 +86,22 @@ export interface CombinedAnalysisResult {
   barbaDetected: boolean;
 }
 
+export interface ManualColorInput {
+  cheek: string;
+  chin: string;
+  forehead: string;
+  hair_root: string;
+  iris: string;
+  mouth: string;
+  mouth_contour: string;
+  under_eye_skin: string;
+}
+
+export interface DualClassificationResult {
+  aiResult: ColoracaoClassificacaoResponse;
+  manualResult: ColoracaoClassificacaoResponse;
+}
+
 export interface ColoracaoClassificacaoResponse {
   id: string;
   logs: Record<string, unknown>;

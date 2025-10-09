@@ -6,14 +6,24 @@ import {
   RegionResult, 
   RegionDetail,
   ColoracaoClassificacaoResponse,
-  CombinedAnalysisResult
+  CombinedAnalysisResult,
+  ManualColorInput as ManualColorInputType
 } from '../../types/coloracaoSimplificado';
 import ImageUploadSection from '../shared/ImageUploadSection';
 import AnalysisResultsTab from '../coloracao/AnalysisResultsTab';
+import ManualColorInput from '../coloracao/ManualColorInput';
+import ColorTemplateSelector from '../shared/ColorTemplateSelector';
+import Header from '../shared/Header';
+import manualColorsData from '../../../manual-colors.json';
 
 const ColoracaoSimplificado: React.FC = () => {
-  // Step management
-  const [currentStep, setCurrentStep] = useState<'frontal' | 'eye' | 'results'>('frontal');
+  // Mode selection: 'mode-selection' -> then either extraction or classification path
+  const [mode, setMode] = useState<'extraction' | 'classification' | null>(null);
+  
+  // Step management based on mode
+  // Extraction mode: 'frontal' -> 'eye' -> 'extraction-results' -> 'manual-input' -> 'classification'
+  // Classification mode: 'manual-input' -> 'classification'
+  const [currentStep, setCurrentStep] = useState<'mode-selection' | 'frontal' | 'eye' | 'extraction-results' | 'manual-input' | 'classification'>('mode-selection');
   
   // Frontal image states
   const [frontalImageUrl, setFrontalImageUrl] = useState<string>('');
@@ -29,11 +39,28 @@ const ColoracaoSimplificado: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [analysisStatus, setAnalysisStatus] = useState<string>('');
   
-  // New states for classification
-  const [activeTab, setActiveTab] = useState<'extraction' | 'classification'>('extraction');
+  // Manual color input states - start empty
+  const [manualColors, setManualColors] = useState<Record<string, string>>({
+    cheek: '',
+    chin: '',
+    forehead: '',
+    hair_root: '',
+    eyebrows: '',
+    iris: '',
+    mouth: '',
+    mouth_contour: '',
+    under_eye_skin: '',
+  });
+  
+  // Template selector state
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<number | undefined>(undefined);
+  
+  // Classification states
+  const [activeClassificationTab, setActiveClassificationTab] = useState<'ai' | 'manual'>('manual');
   const [isClassifying, setIsClassifying] = useState(false);
   const [classificationStatus, setClassificationStatus] = useState<string>('');
-  const [finalResults, setFinalResults] = useState<ColoracaoClassificacaoResponse | null>(null);
+  const [aiClassificationResult, setAiClassificationResult] = useState<ColoracaoClassificacaoResponse | null>(null);
+  const [manualClassificationResult, setManualClassificationResult] = useState<ColoracaoClassificacaoResponse | null>(null);
   const [barbaDetected, setBarbaDetected] = useState<boolean>(false);
 
   // Sample image URLs for frontal face
@@ -156,25 +183,40 @@ const ColoracaoSimplificado: React.FC = () => {
     }
   };
 
-  const handlePreviousStep = () => {
-    if (currentStep === 'eye') {
+  const handleModeSelection = (selectedMode: 'extraction' | 'classification') => {
+    setMode(selectedMode);
+    if (selectedMode === 'extraction') {
       setCurrentStep('frontal');
-    } else if (currentStep === 'results') {
-      setCurrentStep('eye');
+    } else {
+      setCurrentStep('manual-input');
     }
   };
 
   const handleRestart = () => {
-    setCurrentStep('frontal');
+    setCurrentStep('mode-selection');
+    setMode(null);
     setFrontalImageUrl('');
     setIsFrontalImageValid(false);
     setEyeImageUrl('');
     setIsEyeImageValid(false);
     setCombinedResult(null);
-    setFinalResults(null);
+    setManualColors({
+      cheek: '',
+      chin: '',
+      forehead: '',
+      hair_root: '',
+      eyebrows: '',
+      iris: '',
+      mouth: '',
+      mouth_contour: '',
+      under_eye_skin: '',
+    });
+    setAiClassificationResult(null);
+    setManualClassificationResult(null);
     setError('');
     setBarbaDetected(false);
-    setActiveTab('extraction');
+    setActiveClassificationTab('manual');
+    setSelectedTemplateIndex(undefined);
   };
 
   const handleAnalyze = async () => {
@@ -191,7 +233,7 @@ const ColoracaoSimplificado: React.FC = () => {
     setIsAnalyzing(true);
     setError('');
     setAnalysisStatus('Iniciando análises em paralelo...');
-    setCurrentStep('results');
+    setCurrentStep('extraction-results');
 
     try {
       // Try to catch which request fails (frontal or eye)
@@ -230,88 +272,184 @@ const ColoracaoSimplificado: React.FC = () => {
 
       setCombinedResult(result);
       setBarbaDetected(result.barbaDetected);
+      // Don't pre-fill manual colors - let user fill them manually
       setAnalysisStatus('');
-      setActiveTab('extraction');
     } finally {
       setIsAnalyzing(false);
     }
   };
 
+  const handleProceedToManualInput = () => {
+    setCurrentStep('manual-input');
+  };
+
+  const handleManualColorChange = (region: string, color: string) => {
+    setManualColors(prev => ({
+      ...prev,
+      [region]: color
+    }));
+    // Clear template selection when user manually edits
+    setSelectedTemplateIndex(undefined);
+  };
+
+  const handleTemplateSelect = (colors: Record<string, string>, index: number) => {
+    setManualColors(colors);
+    setSelectedTemplateIndex(index);
+  };
+
+  // Check if all required manual colors are filled
+  const areManualColorsFilled = () => {
+    const requiredRegions = mode === 'extraction' && barbaDetected
+      ? Object.keys(manualColors).filter(key => key !== 'mouth_contour' && key !== 'chin' && key !== 'eyebrows')
+      : Object.keys(manualColors).filter(key => key !== 'eyebrows');
+    
+    return requiredRegions.every(region => {
+      const color = manualColors[region];
+      // Check if color is filled and is a valid hex color format
+      return color && color.trim() !== '' && /^#[0-9A-Fa-f]{6}$/.test(color);
+    });
+  };
+
+  // Prepare colors for classification, auto-filling eyebrows with hair_root if not provided
+  const prepareColorsForClassification = (colors: Record<string, string>) => {
+    const prepared = { ...colors };
+    // If eyebrows is not filled or invalid, use hair_root color
+    if (!prepared.eyebrows || prepared.eyebrows.trim() === '' || !/^#[0-9A-Fa-f]{6}$/.test(prepared.eyebrows)) {
+      prepared.eyebrows = prepared.hair_root;
+    }
+    return prepared;
+  };
+
   const handleStartClassification = async () => {
-    if (!combinedResult) return;
-
-    // Check if we have any successful regions for classification using new structure
-    const hasSuccessfulRegions = Object.keys(combinedResult.frontalResult.output.details).length > 0;
-
-    if (!hasSuccessfulRegions) {
-      alert('Não é possível realizar a classificação. Nenhuma região foi extraída com sucesso.');
+    // Validate manual colors are filled
+    if (!areManualColorsFilled()) {
+      setError('Por favor, preencha todas as cores antes de realizar a classificação');
       return;
     }
 
-    // Use the combined colors (which includes the eye iris data)
-    const colors = combinedResult.combinedColors;
-    
-    // If barba is detected, exclude mouth_contour and chin from classification
-    const colorsForClassification = combinedResult.barbaDetected 
-      ? Object.fromEntries(Object.entries(colors).filter(([key]) => key !== 'mouth_contour' && key !== 'chin'))
-      : colors;
-
     setIsClassifying(true);
-    setClassificationStatus('Iniciando classificação...');
+    setCurrentStep('classification');
+    setError('');
 
     try {
-      console.log('Starting classification...');
-      console.log('Sending colors:', colorsForClassification);
+      if (mode === 'extraction') {
+        // Dual classification mode: Use both AI and manual colors
+        if (!combinedResult) {
+          setError('Erro: Dados de extração não encontrados');
+          return;
+        }
 
-      let result;
-      try {
-        result = await ColoracaoSimplificadoService.classifyColors(
-          colorsForClassification,
+        const hasSuccessfulRegions = Object.keys(combinedResult.frontalResult.output.details).length > 0;
+        if (!hasSuccessfulRegions) {
+          alert('Não é possível realizar a classificação. Nenhuma região foi extraída com sucesso.');
+          return;
+        }
+
+        // Use the combined colors (which includes the eye iris data)
+        const aiColors = combinedResult.combinedColors;
+        
+        // If barba is detected, exclude mouth_contour and chin from classification
+        const aiColorsForClassification = combinedResult.barbaDetected 
+          ? Object.fromEntries(Object.entries(aiColors).filter(([key]) => key !== 'mouth_contour' && key !== 'chin'))
+          : aiColors;
+
+        // Prepare manual colors with eyebrows auto-filled if needed
+        const preparedManualColors = prepareColorsForClassification(manualColors);
+        const manualColorsForClassification = combinedResult.barbaDetected 
+          ? Object.fromEntries(Object.entries(preparedManualColors).filter(([key]) => key !== 'mouth_contour' && key !== 'chin'))
+          : preparedManualColors;
+
+        setClassificationStatus('Iniciando classificação dupla...');
+
+        console.log('Starting dual classification...');
+        console.log('AI colors:', aiColorsForClassification);
+        console.log('Manual colors:', manualColorsForClassification);
+
+        // Run both classifications in parallel
+        setClassificationStatus('Classificando com cores da IA e cores manuais...');
+        
+        const [aiResult, manualResult] = await Promise.all([
+          ColoracaoSimplificadoService.classifyColors(
+            aiColorsForClassification,
+            (status) => {
+              console.log('AI Classification status:', status);
+            }
+          ),
+          ColoracaoSimplificadoService.classifyColors(
+            manualColorsForClassification,
+            (status) => {
+              console.log('Manual Classification status:', status);
+            }
+          )
+        ]);
+
+        if (aiResult?.status === 'COMPLETED' && manualResult?.status === 'COMPLETED') {
+          setClassificationStatus('Classificações concluídas!');
+          setAiClassificationResult(aiResult);
+          setManualClassificationResult(manualResult);
+          setActiveClassificationTab('manual');
+        } else {
+          console.warn('Unexpected result structure:', { aiResult, manualResult });
+          setClassificationStatus('Classificação concluída com formato inesperado');
+          alert('Classificação concluída, mas o formato do resultado é inesperado. Verifique o console para mais detalhes.');
+        }
+      } else {
+        // Classification-only mode: Use only manual colors
+        setClassificationStatus('Iniciando classificação com cores manuais...');
+
+        console.log('Starting manual-only classification...');
+        
+        // Prepare manual colors with eyebrows auto-filled if needed
+        const preparedManualColors = prepareColorsForClassification(manualColors);
+        console.log('Manual colors:', preparedManualColors);
+
+        const manualResult = await ColoracaoSimplificadoService.classifyColors(
+          preparedManualColors,
           (status) => {
-            console.log('Classification status:', status);
+            console.log('Manual Classification status:', status);
             setClassificationStatus(status);
           }
         );
-      } catch (error) {
-        console.error('Error during final classification:', error);
-        setClassificationStatus('Erro na classificação');
-        // Try to extract a user-friendly error message
-        let message = 'Erro durante a classificação';
-        if (error && typeof error === 'object') {
-          if (error instanceof Error) {
-            message = error.message;
-          } else if ('error' in error && typeof error.error === 'string') {
-            message = error.error;
-          }
-        }
-        setError(`[CLASSIFICAÇÃO] ${message}`);
-        return;
-      }
 
-      if (result?.status === 'COMPLETED') {
-        setClassificationStatus('Classificação concluída!');
-        setFinalResults(result);
-        setActiveTab('classification');
-      } else {
-        console.warn('Unexpected result structure:', result);
-        setClassificationStatus('Classificação concluída com formato inesperado');
-        alert('Classificação concluída, mas o formato do resultado é inesperado. Verifique o console para mais detalhes.');
+        if (manualResult?.status === 'COMPLETED') {
+          setClassificationStatus('Classificação concluída!');
+          setManualClassificationResult(manualResult);
+          // In classification-only mode, only show manual tab
+          setActiveClassificationTab('manual');
+        } else {
+          console.warn('Unexpected result structure:', manualResult);
+          setClassificationStatus('Classificação concluída com formato inesperado');
+          alert('Classificação concluída, mas o formato do resultado é inesperado. Verifique o console para mais detalhes.');
+        }
       }
+    } catch (error) {
+      console.error('Error during classification:', error);
+      setClassificationStatus('Erro na classificação');
+      // Try to extract a user-friendly error message
+      let message = 'Erro durante a classificação';
+      if (error && typeof error === 'object') {
+        if (error instanceof Error) {
+          message = error.message;
+        } else if ('error' in error && typeof error.error === 'string') {
+          message = error.error;
+        }
+      }
+      setError(`[CLASSIFICAÇÃO] ${message}`);
     } finally {
       setIsClassifying(false);
     }
   };
 
   const regionNames: Record<string, string> = {
-    cheek: 'Bochecha',
-    chin: 'Queixo',
+    hair_root: 'Cabelo (Raiz)',
     eyebrows: 'Sobrancelhas',
+    iris: 'Olho',
     forehead: 'Testa',
-    hair_root: 'Raiz do Cabelo',
-    iris: 'Íris',
-    mouth: 'Boca',
+    cheek: 'Bochecha',
+    under_eye_skin: 'Cavidade ocular',
+    chin: 'Queixo',
     mouth_contour: 'Contorno da Boca',
-    under_eye_skin: 'Pele Abaixo dos Olhos'
+    mouth: 'Boca',
   };
 
   const renderColorPalette = (region: RegionAnalysis | RegionDetail) => (
@@ -330,35 +468,41 @@ const ColoracaoSimplificado: React.FC = () => {
     </div>
   );
 
-  const renderTabs = () => {
-    if (!combinedResult) return null;
+  const renderClassificationTabs = () => {
+    if (!aiClassificationResult && !manualClassificationResult) return null;
+
+    // In classification-only mode, don't show tabs if only manual result exists
+    if (mode === 'classification' && !aiClassificationResult) {
+      return null;
+    }
 
     return (
       <div className="flex justify-center mb-6">
         <div className="flex bg-gray-100 rounded-lg p-1">
-          <button
-            onClick={() => setActiveTab('extraction')}
+          {manualClassificationResult && (
+            <button
+            onClick={() => setActiveClassificationTab('manual')}
             className={`px-6 py-2 rounded-md font-medium transition-colors ${
-              activeTab === 'extraction'
-                ? 'bg-[#947B62] text-white'
-                : 'text-gray-600 hover:text-gray-800'
+              activeClassificationTab === 'manual'
+              ? 'bg-[#947B62] text-white'
+              : 'text-gray-600 hover:text-gray-800'
             }`}
-          >
-            Extração
-          </button>
-          <button
-            onClick={() => setActiveTab('classification')}
-            disabled={!finalResults}
-            className={`px-6 py-2 rounded-md font-medium transition-colors ${
-              activeTab === 'classification' && finalResults
-                ? 'bg-[#947B62] text-white'
-                : finalResults
-                ? 'text-gray-600 hover:text-gray-800'
-                : 'text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            Classificação
-          </button>
+            >
+              Cores Manuais
+            </button>
+          )}
+          {aiClassificationResult && (
+            <button
+              onClick={() => setActiveClassificationTab('ai')}
+              className={`px-6 py-2 rounded-md font-medium transition-colors ${
+                activeClassificationTab === 'ai'
+                  ? 'bg-[#947B62] text-white'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Cores da IA
+            </button>
+          )}
         </div>
       </div>
     );
@@ -377,129 +521,68 @@ const ColoracaoSimplificado: React.FC = () => {
 
     return (
       <div className="space-y-6">
+        {/* Minimalist color summary */}
+        <div className="max-w-2xl mx-auto">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Cores Extraídas</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {(barbaDetected
+              ? successfulRegions.filter(([regionKey]) => regionKey !== 'mouth_contour' && regionKey !== 'chin')
+              : successfulRegions
+            ).map(([regionKey, regionData]) => {
+              const irisPalette = regionKey === 'iris' && combinedResult.eyeResult.output.details.iris
+                ? combinedResult.eyeResult.output.details.iris.color_palette
+                : null;
+              const colorResult = irisPalette ? irisPalette.result : regionData.color_palette.result;
+              return (
+                <div key={regionKey} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div
+                    className="w-12 h-12 rounded-md border-2 border-gray-300 shadow-sm flex-shrink-0"
+                    style={{ backgroundColor: colorResult }}
+                  />
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-gray-700">
+                      {regionNames[regionKey as keyof typeof regionNames]}
+                    </div>
+                    <div className="text-xs text-gray-500 font-mono">{colorResult}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Show missing regions if any */}
         {missingRegions.length > 0 && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-2xl mx-auto">
+            <h3 className="text-sm font-semibold text-yellow-800 mb-2">
               Regiões não detectadas ({missingRegions.length})
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="flex flex-wrap gap-2">
               {missingRegions.map((regionKey) => (
-                <div key={regionKey} className="text-sm text-yellow-700">
-                  <span className="font-medium">
-                    {regionNames[regionKey as keyof typeof regionNames]}:
-                  </span>
-                  <span className="ml-1">Não detectada</span>
-                </div>
+                <span key={regionKey} className="text-xs text-yellow-700 bg-yellow-100 px-2 py-1 rounded">
+                  {regionNames[regionKey as keyof typeof regionNames]}
+                </span>
               ))}
             </div>
           </div>
         )}
 
-        {/* Images, color summary, and timing display */}
+        {/* Metadata */}
         {successfulRegions.length > 0 && (
-          <>
-            <div className="flex flex-col md:flex-row gap-8 mb-6">
-              {/* Images */}
-              <div className="text-center md:flex-1">
-                <h4 className="text-lg font-semibold mb-4">Imagem Frontal</h4>
-                <img
-                  src={combinedResult.frontalResult.output.image_url}
-                  alt="Imagem frontal analisada"
-                  className="max-w-xs mx-auto rounded-lg shadow-md mb-4 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => window.open(combinedResult.frontalResult.output.image_url, '_blank')}
-                />
-              </div>
-
-              {/* Color summary component (added back, new color values) */}
-              <div className="md:flex-1 flex flex-col justify-center">
-                <div className="space-y-3">
-                  {(barbaDetected
-                    ? successfulRegions.filter(([regionKey]) => regionKey !== 'mouth_contour' && regionKey !== 'chin')
-                    : successfulRegions
-                  ).map(([regionKey, regionData]) => {
-                    const irisPalette = regionKey === 'iris' && combinedResult.eyeResult.output.details.iris
-                      ? combinedResult.eyeResult.output.details.iris.color_palette
-                      : null;
-                    const colorResult = irisPalette ? irisPalette.result : regionData.color_palette.result;
-                    return (
-                      <div key={regionKey} className="text-center">
-                        <span className="text-sm font-medium text-gray-700 mt-1 block">
-                          {regionNames[regionKey as keyof typeof regionNames]}: {colorResult}
-                        </span>
-                        <div
-                          className="w-full h-8 rounded border border-gray-300"
-                          style={{ backgroundColor: colorResult }}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="text-center md:flex-1">
-                <h4 className="text-lg font-semibold mb-4">Imagem do Olho</h4>
-                <img
-                  src={combinedResult.eyeResult.output.image_url}
-                  alt="Imagem do olho analisada"
-                  className="max-w-xs mx-auto rounded-lg shadow-md mb-4 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => window.open(combinedResult.eyeResult.output.image_url, '_blank')}
-                />
-              </div>
+          <div className="text-center text-sm text-gray-600 max-w-2xl mx-auto">
+            <p className="mb-2">
+              ✓ {(combinedResult.barbaDetected ? successfulRegions.filter(([k]) => k !== 'mouth_contour' && k !== 'chin').length : successfulRegions.length)} de {expectedRegions.length} regiões extraídas
+            </p>
+            <div className="flex justify-center gap-4 text-xs text-gray-500">
+              <span>⚡ Frontal: {(combinedResult.frontalResult.total_time_seconds ?? 0).toFixed(1)}s</span>
+              <span>⚡ Olho: {(combinedResult.eyeResult.total_time_seconds ?? 0).toFixed(1)}s</span>
             </div>
-
-            <div className="text-center mb-6">
-              <p className="text-sm text-gray-600">
-                Regiões extraídas: {(combinedResult.barbaDetected ? successfulRegions.filter(([k]) => k !== 'mouth_contour' && k !== 'chin').length : successfulRegions.length)}/{expectedRegions.length}
-              </p>
-                <div className="text-xs text-gray-500 mt-2 space-y-1">
-                  <p>⚡ Tempo frontal: {(combinedResult.frontalResult.total_time_seconds ?? 0).toFixed(1)}s</p>
-                  <p>⚡ Tempo olho: {(combinedResult.eyeResult.total_time_seconds ?? 0).toFixed(1)}s</p>
-                </div>
-              {combinedResult.barbaDetected && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800 mt-4">
-                  Barba detectada — os itens "Contorno da Boca" e "Queixo" foram omitidos da classificação.
-                </div>
-              )}
-            </div>
-
-            {/* <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {(combinedResult.barbaDetected
-                ? successfulRegions.filter(([regionKey]) => regionKey !== 'mouth_contour' && regionKey !== 'chin')
-                : successfulRegions
-              ).map(([regionKey, regionData]) => (
-                <div key={regionKey} className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-800 mb-3">
-                    {regionNames[regionKey as keyof typeof regionNames]}
-                  </h4>
-
-                  {regionKey === 'iris' && combinedResult.eyeResult.output.details.iris
-                    ? renderColorPalette({ color_palette: combinedResult.eyeResult.output.details.iris.color_palette })
-                    : renderColorPalette(regionData)}
-
-                  <div className="mt-3 text-center">
-                    {(() => {
-                      const irisPalette = regionKey === 'iris' && combinedResult.eyeResult.output.details.iris
-                        ? combinedResult.eyeResult.output.details.iris.color_palette
-                        : null;
-                      const colorResult = irisPalette ? irisPalette.result : regionData.color_palette.result;
-                      return (
-                        <>
-                          <div
-                            className="w-full h-8 rounded border border-gray-300"
-                            style={{ backgroundColor: colorResult }}
-                          />
-                          <span className="text-sm font-medium text-gray-700 mt-2 block">
-                            Cor final: {colorResult}
-                          </span>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
-              ))}
-            </div> */}
-          </>
+            {combinedResult.barbaDetected && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800 mt-4">
+                ⚠️ Barba detectada — "Contorno da Boca" e "Queixo" omitidos
+              </div>
+            )}
+          </div>
         )}
 
         {/* Show message if no regions were successful */}
@@ -519,22 +602,37 @@ const ColoracaoSimplificado: React.FC = () => {
   };
 
   const renderClassificationResults = () => {
-    if (!finalResults) return null;
-
     return (
-      <AnalysisResultsTab finalResults={finalResults} />
+      <div className="space-y-6">
+        {renderClassificationTabs()}
+        {activeClassificationTab === 'ai' && aiClassificationResult && (
+          <AnalysisResultsTab 
+            finalResults={aiClassificationResult} 
+            label="Classificação com Cores Extraídas pela IA"
+          />
+        )}
+        {activeClassificationTab === 'manual' && manualClassificationResult && (
+          <AnalysisResultsTab 
+            finalResults={manualClassificationResult} 
+            label="Classificação com Cores Ajustadas Manualmente"
+          />
+        )}
+      </div>
     );
   };
 
   return (
-    <div className="bg-gray-50 p-4">
-      <div className="max-w-4xl mx-auto min-w-[1000px]">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            {/* Progress indicator */}
-            {currentStep !== 'results' && (
-              <div className="flex items-center space-x-4">
+    <>
+      <Header 
+        onRestart={handleRestart}
+        showRestart={currentStep !== 'mode-selection'}
+      />
+      <div className="bg-gray-50 p-4">
+        <div className="max-w-4xl mx-auto min-w-[1000px]">
+          {/* Progress indicator */}
+          {(currentStep === 'frontal' || currentStep === 'eye') && (
+            <div className="mb-8">
+              <div className="flex items-center justify-center space-x-4">
                 <div className={`flex items-center space-x-2 ${currentStep === 'frontal' ? 'text-[#947B62]' : 'text-gray-400'}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'frontal' ? 'bg-[#947B62] text-white' : 'bg-gray-200'}`}>
                     1
@@ -549,33 +647,8 @@ const ColoracaoSimplificado: React.FC = () => {
                   <span className="font-medium">Imagem do Olho</span>
                 </div>
               </div>
-            )}
-            
-            {/* Action Buttons - only show when we have analysis results */}
-            {combinedResult && (
-              <div className="flex gap-4 ml-auto">
-                <button
-                  onClick={handleStartClassification}
-                  disabled={isClassifying}
-                  className={`px-6 py-2 rounded-lg font-semibold transition-colors ${
-                    isClassifying
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-[#947B62] text-white hover:bg-[#7a624e]'
-                  }`}
-                >
-                  {isClassifying ? 'Classificando...' : 'Nova Classificação'}
-                </button>
-                
-                <button
-                  onClick={handleRestart}
-                  className="px-6 py-2 rounded-lg bg-gray-600 text-white font-semibold hover:bg-gray-700 transition-colors"
-                >
-                  Nova Extração
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+            </div>
+          )}
 
         {/* Loading State */}
         {(isAnalyzing || isClassifying) && (
@@ -592,25 +665,136 @@ const ColoracaoSimplificado: React.FC = () => {
           </div>
         )}
 
-        {/* Results Section */}
-        {!isAnalyzing && !isClassifying && currentStep === 'results' && (
+        {/* Mode Selection Section */}
+        {currentStep === 'mode-selection' && (
+          <div className="bg-white rounded-lg shadow-sm p-12">
+            <h2 className="text-3xl font-bold text-gray-800 mb-4 text-center">Escolha o Modo de Teste</h2>
+            <p className="text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+              Selecione como você deseja testar o sistema de coloração pessoal
+            </p>
+            
+            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {/* Extraction Mode */}
+              <button
+                onClick={() => handleModeSelection('extraction')}
+                className="group bg-gradient-to-br from-[#947B62] to-[#bfa07a] hover:from-[#7a6650] hover:to-[#a68f6a] p-8 rounded-2xl shadow-lg transition-all duration-300 transform hover:scale-105"
+              >
+                <div className="text-white">
+                  <div className="text-5xl mb-4">🔍</div>
+                  <h3 className="text-2xl font-bold mb-3">Testar Extração</h3>
+                  <p className="text-sm opacity-90 mb-4">
+                    Esse fluxo serve para testar a extração automática de cores a partir de imagens do rosto e olho. 
+                    É possivel também usar os resultados da extração para comparar com os cores extraídas manualmente<br />
+                  </p>
+                  <div className="bg-white/20 rounded-lg p-3 text-xs space-y-1">
+                    <div>✓ Upload de imagens</div>
+                    <div>✓ Usar fotos dos testes padrão</div>
+                    <div>✓ Extração de cores pela IA</div>
+                    <div>✓ Comparação com cores extraídas manualmente</div>
+                  </div>
+                </div>
+              </button>
+
+              {/* Classification Mode */}
+              <button
+                onClick={() => handleModeSelection('classification')}
+                className="group bg-gradient-to-br from-[#6b7280] to-[#9ca3af] hover:from-[#4b5563] hover:to-[#6b7280] p-8 rounded-2xl shadow-lg transition-all duration-300 transform hover:scale-105"
+              >
+                <div className="text-white">
+                  <div className="text-5xl mb-4">🎨</div>
+                  <h3 className="text-2xl font-bold mb-3">Testar Classificação</h3>
+                  <p className="text-sm opacity-90 mb-4">
+                    Esse fluxo serve para testar a classificação de coloração pessoal usando apenas a entrada manual de cores em formato hexadecimal. É possivel usar os valores de cores dos testes padrão<br />
+                  </p>
+                  <div className="bg-white/20 rounded-lg p-3 text-xs space-y-1">
+                    <div>✓ Entrada manual de cores</div>
+                    <div>✓ Usar cores dos testes padrão</div>
+                    <div>✓ Teste rápido de classificação</div>
+                    <div>✓ Ver resultados de temperatura e profundidade</div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Extraction Results Section */}
+        {!isAnalyzing && !isClassifying && currentStep === 'extraction-results' && combinedResult && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Resultados da Extração</h2>
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-center">
+                  {error}
+                </div>
+              )}
+              {renderExtractionResults()}
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={handleProceedToManualInput}
+                  className="px-8 py-3 rounded-lg bg-[#947B62] text-white font-semibold hover:bg-[#7a6650] transition-colors"
+                >
+                  Testar a classificação com estas cores
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Manual Input Section */}
+        {!isAnalyzing && !isClassifying && currentStep === 'manual-input' && (
+          <div className="space-y-6">
+            <ColorTemplateSelector
+              templates={manualColorsData}
+              onTemplateSelect={(colors) => {
+                const index = manualColorsData.findIndex(t => t.input.colors === colors);
+                handleTemplateSelect(colors, index);
+              }}
+              selectedIndex={selectedTemplateIndex}
+            />
+            <ManualColorInput
+              colors={manualColors}
+              onColorChange={handleManualColorChange}
+              regionNames={regionNames}
+              barbaDetected={mode === 'extraction' ? barbaDetected : false}
+            />
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-center max-w-2xl mx-auto">
+                {error}
+              </div>
+            )}
+            {!areManualColorsFilled() && !error && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-center max-w-2xl mx-auto text-sm">
+                ℹ️ Preencha todas as cores no formato hexadecimal (ex: #d4a574) para ativar o botão de classificação.<br />
+                <span className="text-xs mt-1 inline-block">Nota: O campo "Sobrancelhas" é opcional. Se não preenchido, será usado o tom do "Cabelo (Raiz)".</span>
+              </div>
+            )}
+            <div className="flex justify-center">
+              <button
+                onClick={handleStartClassification}
+                disabled={isClassifying || !areManualColorsFilled()}
+                className={`px-8 py-3 rounded-lg font-semibold transition-colors ${
+                  isClassifying || !areManualColorsFilled()
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-[#947B62] text-white hover:bg-[#7a6650]'
+                }`}
+              >
+                {isClassifying ? 'Classificando...' : 'Realizar Classificação'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Classification Results Section */}
+        {!isAnalyzing && !isClassifying && currentStep === 'classification' && (
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Resultados</h2>
-            {/* Show error if present */}
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Resultados da Classificação</h2>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-center">
                 {error}
               </div>
             )}
-            {/* Only show tabs/results if we have a result */}
-            {combinedResult && (
-              <>
-                {renderTabs()}
-                {/* Tab Content */}
-                {activeTab === 'extraction' && renderExtractionResults()}
-                {activeTab === 'classification' && renderClassificationResults()}
-              </>
-            )}
+            {renderClassificationResults()}
           </div>
         )}
 
@@ -678,13 +862,7 @@ const ColoracaoSimplificado: React.FC = () => {
                 </div>
               )}
 
-              <div className="flex justify-center space-x-4">
-                <button
-                  onClick={handlePreviousStep}
-                  className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
-                >
-                  Voltar
-                </button>
+              <div className="flex justify-center">
                 <button
                   onClick={handleNextStep}
                   disabled={isAnalyzing || !eyeImageUrl.trim() || !isEyeImageValid}
@@ -699,8 +877,9 @@ const ColoracaoSimplificado: React.FC = () => {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

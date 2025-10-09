@@ -3,20 +3,46 @@ import React from 'react';
 interface GridButtonsProps {
   length: number;
   onButtonClick: (index: number) => void;
+  urls?: string[];
+  selectedIndex?: number;
 }
 
-const GridButtons: React.FC<GridButtonsProps> = ({ length, onButtonClick }) => {
+// Helper function to extract name from URL
+const extractNameFromUrl = (url: string): string => {
+  try {
+    // Split by '/' and get the second to last segment (folder name before image name)
+    const parts = url.split('/');
+    const name = parts[parts.length - 2];
+    // Capitalize first letter and handle special cases
+    return name
+      .split(/[-_]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  } catch {
+    return 'Sample';
+  }
+};
+
+const GridButtons: React.FC<GridButtonsProps> = ({ length, onButtonClick, urls, selectedIndex }) => {
   return (
-    <div className="grid grid-cols-8 gap-2">
-      {Array.from({ length }, (_, index) => (
-        <button
-          key={index}
-          onClick={() => onButtonClick(index)}
-          className="w-10 h-10 bg-[#947B62] text-white font-semibold rounded-md hover:bg-[#7a624e] transition-all"
-        >
-          {index + 1}
-        </button>
-      ))}
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+      {Array.from({ length }, (_, index) => {
+        const displayText = urls ? extractNameFromUrl(urls[index]) : `${index + 1}`;
+        
+        return (
+          <button
+            key={index}
+            onClick={() => onButtonClick(index)}
+            className={`px-4 py-3 rounded-lg font-medium text-sm transition-all ${
+              selectedIndex === index
+                ? 'bg-[#947B62] text-white shadow-md'
+                : 'bg-gray-100 text-gray-700 hover:bg-[#947B62] hover:text-white'
+            }`}
+          >
+            {displayText}
+          </button>
+        );
+      })}
     </div>
   );
 };

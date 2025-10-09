@@ -1,0 +1,477 @@
+[
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/carol/frontal_tbase.png",
+      "filename": "Verao Suave (Carol Pistelli) CM",
+      "name": "Carol Pistelli",
+      "expected-season": "verao-suave",
+      "colors": {
+        "hair_root": "#3a2e20",
+        "eyebrows": "#3a2e20",
+        "iris": "#7c5e47",
+        "forehead": "#fec7af",
+        "cheek": "#e29f88",
+        "under_eye_skin": "#db9e87",
+        "mouth_contour": "#b2716a",
+        "mouth": "#d17c80",
+        "chin": "#d99f89"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-brilhante/isa/frontal_tbase.png",
+      "filename": "Inverno Brilhante (Isa Dantas) CM",
+      "name": "Isa Dantas",
+      "expected-season": "inverno-brilhante",
+      "colors": {
+        "hair_root": "#1A1215",
+        "eyebrows": "#1A1215",
+        "iris": "#5B3A30",
+        "forehead": "#D2957D",
+        "cheek": "#BD7662",
+        "under_eye_skin": "#7F4534",
+        "mouth_contour": "#EB9F88",
+        "mouth": "#CD6C6F",
+        "chin": "#D78A66"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/alessandra/frontal_tbase.png",
+      "filename": "Inverno Escuro (Alessandra) CM",
+      "name": "Alessandra",
+      "expected-season": "outono-suave",
+      "colors": {
+        "hair_root": "#231f1a",
+        "eyebrows": "#231f1a",
+        "iris": "#1f0d07",
+        "forehead": "#e4b993",
+        "cheek": "#deb381",
+        "under_eye_skin": "#7f442c",
+        "mouth_contour": "#905036",
+        "mouth": "#c98379",
+        "chin": "#ddb08e"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/camila/frontal_tbase.png",
+      "filename": "Inverno Escuro (Camila Gonçalvez) CM",
+      "name": "Camila Gonçalvez",
+      "expected-season": "inverno-escuro",
+      "colors": {
+        "hair_root": "#1C1E21",
+        "eyebrows": "#1C1E21",
+        "iris": "#352222",
+        "forehead": "#CC957A",
+        "cheek": "#BE7B4D",
+        "under_eye_skin": "#AC8278",
+        "mouth_contour": "#B68077",
+        "mouth": "#7d3f3a",
+        "chin": "#A86847"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/lorena_bt/frontal_tbase.png",
+      "filename": "Inverno Escuro (Lorena BT) CM",
+      "name": "Lorena BT",
+      "expected-season": "inverno-escuro",
+      "colors": {
+        "hair_root": "#211F17",
+        "eyebrows": "#211F17",
+        "iris": "#462A1E",
+        "forehead": "#D89A81",
+        "cheek": "#EEB082",
+        "under_eye_skin": "#D5946E",
+        "mouth_contour": "#B26E5C",
+        "mouth": "#C46463",
+        "chin": "#C38A6D"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/mara/frontal_tbase.png",
+      "filename": "Inverno Escuro (Mara) CM",
+      "name": "Mara",
+      "expected-season": "inverno-escuro",
+      "colors": {
+        "hair_root": "#040407",
+        "eyebrows": "#040407",
+        "iris": "#281919",
+        "forehead": "#dfaa99",
+        "cheek": "#d79982",
+        "under_eye_skin": "#9b6f63",
+        "mouth_contour": "#965b57",
+        "mouth": "#7b3942",
+        "chin": "#d49785"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/matheus/frontal_tbase.png",
+      "filename": "Inverno Escuro (Matheus) CM",
+      "name": "Matheus",
+      "expected-season": "inverno-escuro",
+      "colors": {
+        "hair_root": "#191214",
+        "eyebrows": "#191214",
+        "iris": "#261a18",
+        "forehead": "#e3af94",
+        "cheek": "#d29577",
+        "under_eye_skin": "#b98a71",
+        "mouth_contour": "#b5625c",
+        "mouth": "#cc7477",
+        "chin": "#cf9271"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-escuro/ted/frontal_tbase.png",
+      "filename": "Inverno Escuro (Ted) CM",
+      "name": "Ted",
+      "expected-season": "inverno-escuro",
+      "colors": {
+        "hair_root": "#3B2B27",
+        "eyebrows": "#3B2B27",
+        "iris": "#42271D",
+        "forehead": "#DF9680",
+        "cheek": "#C17761",
+        "under_eye_skin": "#A46859",
+        "mouth_contour": "#CD826F",
+        "mouth": "#B84F52",
+        "chin": "#CE7D69"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-frio/gabriel/frontal_tbase.png",
+      "filename": "Inverno Frio (Gabriel Gadelha) CM",
+      "name": "Gabriel Gadelha",
+      "expected-season": "inverno-frio",
+      "colors": {
+        "hair_root": "#040404",
+        "eyebrows": "#040404",
+        "iris": "#2D1B1D",
+        "forehead": "#E2A68C",
+        "cheek": "#F7C3AE",
+        "under_eye_skin": "#AB726A",
+        "mouth_contour": "#CF7978",
+        "mouth": "#B14550",
+        "chin": "#E1AB97"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/outono-escuro/larissa/frontal_tbase.png",
+      "filename": "Outono Escuro (Larissa Carvalho) CM",
+      "name": "Larissa Carvalho",
+      "expected-season": "outono-escuro",
+      "colors": {
+        "hair_root": "#2D1E16",
+        "eyebrows": "#2D1E16",
+        "iris": "#3A210B",
+        "forehead": "#B68251",
+        "cheek": "#C78A60",
+        "under_eye_skin": "#A17351",
+        "mouth_contour": "#7F4A36",
+        "mouth": "#904740",
+        "chin": "#C79673"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/outono-quente/lara/frontal_tbase.png",
+      "filename": "Outono Quente (Lara) CM",
+      "name": "Lara",
+      "expected-season": "outono-quente",
+      "colors": {
+        "hair_root": "#4f220a",
+        "eyebrows": "#4f220a",
+        "iris": "#311009",
+        "forehead": "#f3c2ad",
+        "cheek": "#fccbba",
+        "under_eye_skin": "#e3aca3",
+        "mouth_contour": "#ce987b",
+        "mouth": "#af4850",
+        "chin": "#6d3d2a"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/sem-cartela/jonatan/frontal_tbase.png",
+      "filename": "Outono Escuro (Jonatan Almeida) CM",
+      "name": "Jonatan Almeida",
+      "expected-season": "outono-suave",
+      "colors": {
+        "hair_root": "#1c0806",
+        "eyebrows": "#1c0806",
+        "iris": "#68471e",
+        "forehead": "#eda9a6",
+        "cheek": "#d09a82",
+        "under_eye_skin": "#b1806f",
+        "mouth_contour": "#9d5a55",
+        "mouth": "#cc7180",
+        "chin": "#cd8e81"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/sem-cartela/valeria/frontal_tbase.png",
+      "filename": "Inverno Escuro (Valéria) CM",
+      "name": "Valéria",
+      "expected-season": "inverno-brilhante",
+      "colors": {
+        "hair_root": "#27221b",
+        "eyebrows": "#27221b",
+        "iris": "#301b16",
+        "forehead": "#ebb3a0",
+        "cheek": "#dca386",
+        "under_eye_skin": "#c28f7c",
+        "mouth_contour": "#bb6862",
+        "mouth": "#ce6b77",
+        "chin": "#c99272"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/bia/frontal_tbase.png",
+      "filename": "Verao Claro (Bia) CM",
+      "name": "Bia",
+      "expected-season": "verao-claro",
+      "colors": {
+        "hair_root": "#5F5448",
+        "eyebrows": "#5F5448",
+        "iris": "#78796E",
+        "forehead": "#EBBDA7",
+        "cheek": "#E2AE94",
+        "under_eye_skin": "#BC7866",
+        "mouth_contour": "#CC8286",
+        "mouth": "#D78081",
+        "chin": "#F6C6AF"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/bianca/frontal_tbase.png",
+      "filename": "Verao Claro (Bianca Martins) CM",
+      "name": "Bianca Martins",
+      "expected-season": "verao-claro",
+      "colors": {
+        "hair_root": "#614F46",
+        "eyebrows": "#614F46",
+        "iris": "#5A4944",
+        "forehead": "#EEBCA9",
+        "cheek": "#F6B7A0",
+        "under_eye_skin": "#D39172",
+        "mouth_contour": "#D38C79",
+        "mouth": "#D88994",
+        "chin": "#F8B49F"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/henrique/frontal_tbase.png",
+      "filename": "Verao Claro (Henrique Alonso) CM",
+      "name": "Henrique Alonso",
+      "expected-season": "verao-frio",
+      "colors": {
+        "hair_root": "#6b594a",
+        "eyebrows": "#6b594a",
+        "iris": "#7c857d",
+        "forehead": "#ffc19d",
+        "cheek": "#f0b48d",
+        "under_eye_skin": "#d48768",
+        "mouth_contour": "#c67b5f",
+        "mouth": "#f08e87",
+        "chin": "#f0b48c"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-claro/mariana/frontal_tbase.png",
+      "filename": "Verao Claro (Mariana Koch) CM",
+      "name": "Mariana Koch",
+      "expected-season": "verao-claro",
+      "colors": {
+        "hair_root": "#8E5337",
+        "eyebrows": "#8C5F42",
+        "iris": "#7D7452",
+        "forehead": "#F9C8BB",
+        "cheek": "#E2A69B",
+        "under_eye_skin": "#C3816C",
+        "mouth_contour": "#DC827E",
+        "mouth": "#F07F85",
+        "chin": "#E9AE9D"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/inacio/frontal_tbase.png",
+      "filename": "Verao Frio (Inácio) CM",
+      "name": "Inácio",
+      "expected-season": "verao-frio",
+      "colors": {
+        "hair_root": "#59463f",
+        "eyebrows": "#59463f",
+        "iris": "#746449",
+        "forehead": "#e6bfaf",
+        "cheek": "#d4a89c",
+        "under_eye_skin": "#c99999",
+        "mouth_contour": "#cb8a7f",
+        "mouth": "#c35e6d",
+        "chin": "#d7ab9e"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/larissa/frontal_tbase.png",
+      "filename": "Verao Frio (Larissa) CM",
+      "name": "Larissa",
+      "expected-season": "verao-frio",
+      "colors": {
+        "hair_root": "#8b715d",
+        "eyebrows": "#8b715d",
+        "iris": "#888b8a",
+        "forehead": "#f6ccb7",
+        "cheek": "#f2c3b1",
+        "under_eye_skin": "#dfa68e",
+        "mouth_contour": "#e48486",
+        "mouth": "#f1979c",
+        "chin": "#f1bcaa"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/livia/frontal_tbase.png",
+      "filename": "Verao Frio (Livia) CM",
+      "name": "Livia",
+      "expected-season": "verao-frio",
+      "colors": {
+        "hair_root": "#593624",
+        "eyebrows": "#593624",
+        "iris": "#62524d",
+        "forehead": "#f6ccb8",
+        "cheek": "#ebaf9c",
+        "under_eye_skin": "#c6816a",
+        "mouth_contour": "#d07e77",
+        "mouth": "#d86971",
+        "chin": "#e59c82"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/lorena/frontal_tbase.png",
+      "filename": "Verao Frio (Lorena) CM",
+      "name": "Lorena",
+      "expected-season": "verao-frio",
+      "colors": {
+        "hair_root": "#cab29c",
+        "eyebrows": "#cab29c",
+        "iris": "#4b3945",
+        "forehead": "#d0a588",
+        "cheek": "#d9a78b",
+        "under_eye_skin": "#c29379",
+        "mouth_contour": "#915f4e",
+        "mouth": "#c17868",
+        "chin": "#c39170"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-frio/pollyana/frontal_tbase.png",
+      "filename": "Verao Frio (Pollyana Lima) CM",
+      "name": "Pollyana Lima",
+      "expected-season": "verao-frio",
+      "colors": {
+        "hair_root": "#705a53",
+        "eyebrows": "#705a53",
+        "iris": "#665941",
+        "forehead": "#eccacc",
+        "cheek": "#dfb3a8",
+        "under_eye_skin": "#d9c1b7",
+        "mouth_contour": "#c88c85",
+        "mouth": "#d58a99",
+        "chin": "#ecc1bc"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/alexandre/frontal_tbase.png",
+      "filename": "Verao Suave (Alexandre) CM",
+      "name": "Alexandre",
+      "expected-season": "verao-suave",
+      "colors": {
+        "hair_root": "#36221B",
+        "eyebrows": "#36221B",
+        "iris": "#94664E",
+        "forehead": "#FDB6AA",
+        "cheek": "#F09B87",
+        "under_eye_skin": "#DA8D7B",
+        "mouth_contour": "#F18B7F",
+        "mouth": "#F59696",
+        "chin": "#F6AA93"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/camila-oliveira/frontal_tbase.png",
+      "filename": "Verao Suave (Camila Oliveira) CM",
+      "name": "Camila Oliveira",
+      "expected-season": "verao-suave",
+      "colors": {
+        "hair_root": "#372C2A",
+        "eyebrows": "#372C2A",
+        "iris": "#3B181D",
+        "forehead": "#F9B9BE",
+        "cheek": "#F7ADA0",
+        "under_eye_skin": "#BE7B74",
+        "mouth_contour": "#DB8787",
+        "mouth": "#EE9CB2",
+        "chin": "#F19D92"
+      }
+    }
+  },
+  {
+    "input": {
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/carol/frontal_tbase.png",
+      "filename": "Verao Suave (Carol Pistelli) CM",
+      "name": "Carol Pistelli",
+      "expected-season": "verao-suave",
+      "colors": {
+        "hair_root": "#3a2e20",
+        "eyebrows": "#3a2e20",
+        "iris": "#7c5e47",
+        "forehead": "#fec7af",
+        "cheek": "#e29f88",
+        "under_eye_skin": "#db9e87",
+        "mouth_contour": "#b2716a",
+        "mouth": "#d17c80",
+        "chin": "#d99f89"
+      }
+    }
+  }
+]
