@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ExtractionResults from './ExtractionResults';
 import { ColoracaoSimplificadoService } from '../../services/coloracaoSimplificadoService';
 import { 
   ColoracaoSimplificadoResponse, 
@@ -720,24 +721,20 @@ const ColoracaoSimplificado: React.FC = () => {
 
         {/* Extraction Results Section */}
         {!isAnalyzing && !isClassifying && currentStep === 'extraction-results' && combinedResult && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Resultados da Extração</h2>
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-center">
-                  {error}
-                </div>
-              )}
-              {renderExtractionResults()}
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={handleProceedToManualInput}
-                  className="px-8 py-3 rounded-lg bg-[#947B62] text-white font-semibold hover:bg-[#7a6650] transition-colors"
-                >
-                  Testar a classificação com estas cores
-                </button>
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Resultados da Extração</h2>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-center">
+                {error}
               </div>
-            </div>
+            )}
+            <ExtractionResults
+              combinedResult={combinedResult}
+              barbaDetected={barbaDetected}
+              regionNames={regionNames}
+              error={error}
+              onProceedToManualInput={handleProceedToManualInput}
+            />
           </div>
         )}
 

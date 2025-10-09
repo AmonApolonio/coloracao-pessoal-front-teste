@@ -6,11 +6,21 @@ export interface ColoracaoSimplificadoRequest {
 }
 
 export interface ColorPalette {
-  average: string;
-  dark: string;
-  light: string;
-  median: string;
+  average?: string;
+  dark?: string;
+  light?: string;
+  median?: string;
   result: string;
+  logs?: {
+    avg_brightness?: number;
+    avg_saturation?: number;
+    clusters_used?: number;
+    is_fallback?: boolean;
+    median_brightness?: number;
+    median_saturation?: number;
+    pixel_count?: number;
+    [key: string]: any;
+  };
 }
 
 export interface UploadedImages {
@@ -22,6 +32,39 @@ export interface RegionError {
   error: string;
 }
 
+// Types for region coordinates
+export interface PolygonCoordinates {
+  type: 'polygon';
+  coordinates: [number, number][];
+}
+
+export interface DonutCoordinates {
+  type: 'donut';
+  coordinates: {
+    outer: [number, number][];
+    inner: [number, number][];
+  };
+}
+
+export interface CircleCoordinates {
+  type: 'circle';
+  coordinates: [number, number][];
+  metadata: {
+    center: [number, number];
+    radius: number;
+  };
+}
+
+export type LandmarkRegion = PolygonCoordinates | DonutCoordinates | CircleCoordinates;
+
+// Processed region can be an array of polygons or a single polygon
+export type ProcessedRegion = [number, number][] | [number, number][][];
+
+export interface RegionCoordinates {
+  landmark_region: LandmarkRegion;
+  processed_region: ProcessedRegion;
+}
+
 export interface RegionAnalysis {
   color_palette: ColorPalette;
   region?: number[][] | {
@@ -29,11 +72,13 @@ export interface RegionAnalysis {
     outer: number[][];
   };
   uploaded_images: UploadedImages;
+  region_coordinates?: RegionCoordinates;
 }
 
 // New simplified region detail structure (no uploaded_images, no errors per region)
 export interface RegionDetail {
   color_palette: ColorPalette;
+  region_coordinates?: RegionCoordinates;
 }
 
 export type RegionResult = RegionAnalysis | RegionError;

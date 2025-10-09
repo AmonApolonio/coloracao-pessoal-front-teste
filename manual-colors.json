@@ -1,20 +1,20 @@
 [
   {
     "input": {
-      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/verao-suave/carol/frontal_tbase.png",
-      "filename": "Verao Suave (Carol Pistelli) CM",
-      "name": "Carol Pistelli",
-      "expected-season": "verao-suave",
+      "user-photo": "https://tantto-assinaturas.s3.us-east-1.amazonaws.com/gennie-mock/validacao/inverno-brilhante/gabriela/frontal_tbase.png",
+      "filename": "Inverno Brilhante (Gabriela) CM",
+      "name": "Gabriela",
+      "expected-season": "inverno-brilhante",
       "colors": {
-        "hair_root": "#3a2e20",
-        "eyebrows": "#3a2e20",
-        "iris": "#7c5e47",
-        "forehead": "#fec7af",
-        "cheek": "#e29f88",
-        "under_eye_skin": "#db9e87",
-        "mouth_contour": "#b2716a",
-        "mouth": "#d17c80",
-        "chin": "#d99f89"
+        "hair_root": "#3F2D26",
+        "eyebrows": "#3F2D26",
+        "iris": "#45231B",
+        "forehead": "#EDB795",
+        "cheek": "#E09C7F",
+        "under_eye_skin": "#C48268",
+        "mouth_contour": "#BD625B",
+        "mouth": "#D76A6B",
+        "chin": "#EAA588"
       }
     }
   },
