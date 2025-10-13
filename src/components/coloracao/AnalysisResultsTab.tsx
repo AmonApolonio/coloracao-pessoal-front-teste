@@ -43,10 +43,10 @@ const AnalysisResultsTab: React.FC<AnalysisResultsTabProps> = ({ finalResults, l
     <div className="space-y-8">
       {renderSeasonResult()}
       <div>
-        <SaturationBrightnessChart finalResults={finalResults} />
+        <IndividualMetricsChart finalResults={finalResults} />
       </div>
       <div>
-        <IndividualMetricsChart finalResults={finalResults} />
+        <SaturationBrightnessChart finalResults={finalResults} />
       </div>
     </div>
   );

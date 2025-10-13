@@ -211,9 +211,80 @@ const ExtractionResults: React.FC<ExtractionResultsProps> = ({
                     />
                   </g>
                 );
+              } else if ((coords.type === 'processed' || coords.type === 'donut') && coords.coordinates) {
+                const { outer, inner } = coords.coordinates;
+                
+                if (!outer || !Array.isArray(outer) || outer.length === 0) return null;
+
+                const outerPolygons = outer.map((polygonCoords: any, idx: number) => {
+                  if (polygonCoords.length > 0 && Array.isArray(polygonCoords[0]) && polygonCoords[0].length === 2) {
+                    const points: [number, number][] = polygonCoords.map((pair: any) => {
+                      const [x, y] = pair;
+                      return [x * scaleX + offsetX, y * scaleY + offsetY] as [number, number];
+                    });
+                    return points;
+                  }
+                  return null;
+                }).filter(Boolean);
+
+                if (inner && Array.isArray(inner) && inner.length > 0) {
+                  const innerPolygons = inner.map((polygonCoords: any) => {
+                    if (polygonCoords.length > 0 && Array.isArray(polygonCoords[0]) && polygonCoords[0].length === 2) {
+                      const points: [number, number][] = polygonCoords.map((pair: any) => {
+                        const [x, y] = pair;
+                        return [x * scaleX + offsetX, y * scaleY + offsetY] as [number, number];
+                      });
+                      return points;
+                    }
+                    return null;
+                  }).filter(Boolean);
+
+                  return (
+                    <g>
+                      <defs>
+                        <mask id={maskId}>
+                          <rect x="0" y="0" width="400" height="500" fill="white" />
+                          {innerPolygons.map((points: any, idx: number) => (
+                            <polygon
+                              key={idx}
+                              points={points.map(([x, y]: [number, number]) => `${x},${y}`).join(' ')}
+                              fill="black"
+                            />
+                          ))}
+                        </mask>
+                      </defs>
+                      {outerPolygons.map((points: any, idx: number) => (
+                        <polygon
+                          key={idx}
+                          points={points.map(([x, y]: [number, number]) => `${x},${y}`).join(' ')}
+                          fill={color}
+                          fillOpacity={0.35}
+                          stroke="none"
+                          style={{ transition: 'all 0.2s' }}
+                          mask={`url(#${maskId})`}
+                        />
+                      ))}
+                    </g>
+                  );
+                } else {
+                  return (
+                    <g>
+                      {outerPolygons.map((points: any, idx: number) => (
+                        <polygon
+                          key={idx}
+                          points={points.map(([x, y]: [number, number]) => `${x},${y}`).join(' ')}
+                          fill={color}
+                          fillOpacity={0.35}
+                          stroke="none"
+                          style={{ transition: 'all 0.2s' }}
+                        />
+                      ))}
+                    </g>
+                  );
+                }
               }
 
-              // Handle processed_region format: array of polygons [[[x,y], ...], [[x,y], ...]] or single polygon [[x,y], ...]
+              // Handle legacy processed_region format: array of polygons [[[x,y], ...], [[x,y], ...]] or single polygon [[x,y], ...]
               if (Array.isArray(coords)) {
                 // Check if it's an array of polygons (first element is an array of coordinates)
                 if (coords.length > 0 && Array.isArray(coords[0])) {
@@ -280,36 +351,59 @@ const ExtractionResults: React.FC<ExtractionResultsProps> = ({
                   <mask id="yellow-cutout-mask">
                     <rect x="0" y="0" width="400" height="500" fill="white" />
                     {/* Black out the red regions so yellow won't show there */}
-                    {processed_region && Array.isArray(processed_region) && processed_region.length > 0 && (() => {
-                      const isArrayOfPolygons = Array.isArray(processed_region[0]) && Array.isArray(processed_region[0][0]);
-                      if (isArrayOfPolygons) {
-                        return processed_region.map((polygonCoords: any, idx: number) => {
-                          if (polygonCoords.length > 0 && Array.isArray(polygonCoords[0]) && polygonCoords[0].length === 2) {
-                            const points: [number, number][] = polygonCoords.map((pair: any) => {
-                              const [x, y] = pair;
-                              return [x * scaleX + offsetX, y * scaleY + offsetY] as [number, number];
-                            });
-                            return (
-                              <polygon
-                                key={idx}
-                                points={points.map(([x, y]) => `${x},${y}`).join(' ')}
-                                fill="black"
-                              />
-                            );
-                          }
-                          return null;
-                        });
-                      } else if (processed_region[0] && processed_region[0].length === 2) {
-                        const points: [number, number][] = processed_region.map((pair: any) => {
-                          const [x, y] = pair;
-                          return [x * scaleX + offsetX, y * scaleY + offsetY] as [number, number];
-                        });
-                        return (
-                          <polygon
-                            points={points.map(([x, y]) => `${x},${y}`).join(' ')}
-                            fill="black"
-                          />
-                        );
+                    {processed_region && (() => {
+                      if (typeof processed_region === 'object' && 'type' in processed_region && processed_region.type === 'processed' && 'coordinates' in processed_region) {
+                        const { outer } = processed_region.coordinates;
+                        if (outer && Array.isArray(outer) && outer.length > 0) {
+                          return outer.map((polygonCoords: any, idx: number) => {
+                            if (polygonCoords.length > 0 && Array.isArray(polygonCoords[0]) && polygonCoords[0].length === 2) {
+                              const points: [number, number][] = polygonCoords.map((pair: any) => {
+                                const [x, y] = pair;
+                                return [x * scaleX + offsetX, y * scaleY + offsetY] as [number, number];
+                              });
+                              return (
+                                <polygon
+                                  key={idx}
+                                  points={points.map(([x, y]) => `${x},${y}`).join(' ')}
+                                  fill="black"
+                                />
+                              );
+                            }
+                            return null;
+                          });
+                        }
+                      }
+                      else if (Array.isArray(processed_region) && processed_region.length > 0) {
+                        const isArrayOfPolygons = Array.isArray(processed_region[0]) && Array.isArray(processed_region[0][0]);
+                        if (isArrayOfPolygons) {
+                          return processed_region.map((polygonCoords: any, idx: number) => {
+                            if (polygonCoords.length > 0 && Array.isArray(polygonCoords[0]) && polygonCoords[0].length === 2) {
+                              const points: [number, number][] = polygonCoords.map((pair: any) => {
+                                const [x, y] = pair;
+                                return [x * scaleX + offsetX, y * scaleY + offsetY] as [number, number];
+                              });
+                              return (
+                                <polygon
+                                  key={idx}
+                                  points={points.map(([x, y]) => `${x},${y}`).join(' ')}
+                                  fill="black"
+                                />
+                              );
+                            }
+                            return null;
+                          });
+                        } else if (processed_region[0] && processed_region[0].length === 2) {
+                          const points: [number, number][] = processed_region.map((pair: any) => {
+                            const [x, y] = pair;
+                            return [x * scaleX + offsetX, y * scaleY + offsetY] as [number, number];
+                          });
+                          return (
+                            <polygon
+                              points={points.map(([x, y]) => `${x},${y}`).join(' ')}
+                              fill="black"
+                            />
+                          );
+                        }
                       }
                       return null;
                     })()}

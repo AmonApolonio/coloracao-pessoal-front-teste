@@ -27,7 +27,7 @@ const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
   uploadType = 'extracao-frontal',
   sampleImages
 }) => {
-  const [activeTab, setActiveTab] = useState<'url' | 'upload'>('upload');
+  const [activeTab, setActiveTab] = useState<'url' | 'upload'>('url');
   const [selectedSampleIndex, setSelectedSampleIndex] = useState<number | undefined>(undefined);
 
   const handleFileUploaded = (url: string) => {
@@ -63,17 +63,6 @@ const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
       <div className="flex justify-center">
         <div className="flex bg-gray-100 rounded-lg p-1 max-w-md">
           <button
-            onClick={() => setActiveTab('upload')}
-            disabled={disabled}
-            className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
-              activeTab === 'upload'
-                ? 'bg-[#947B62] text-white'
-                : 'text-gray-600 hover:text-gray-800'
-            } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            📁 Upload Arquivo
-          </button>
-          <button
             onClick={() => setActiveTab('url')}
             disabled={disabled}
             className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
@@ -83,6 +72,17 @@ const ImageUploadSection: React.FC<ImageUploadSectionProps> = ({
             } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             🔗 URL
+          </button>
+          <button
+            onClick={() => setActiveTab('upload')}
+            disabled={disabled}
+            className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors ${
+              activeTab === 'upload'
+                ? 'bg-[#947B62] text-white'
+                : 'text-gray-600 hover:text-gray-800'
+            } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            📁 Upload Arquivo
           </button>
         </div>
       </div>

@@ -57,8 +57,15 @@ export interface CircleCoordinates {
 
 export type LandmarkRegion = PolygonCoordinates | DonutCoordinates | CircleCoordinates;
 
-// Processed region can be an array of polygons or a single polygon
-export type ProcessedRegion = [number, number][] | [number, number][][];
+export interface ProcessedRegionCoordinates {
+  type: 'processed';
+  coordinates: {
+    outer: [number, number][][];
+    inner?: [number, number][][];
+  };
+}
+
+export type ProcessedRegion = ProcessedRegionCoordinates | [number, number][] | [number, number][][];
 
 export interface RegionCoordinates {
   landmark_region: LandmarkRegion;

@@ -28,7 +28,7 @@ const SaturationBrightnessChart: React.FC<SaturationBrightnessChartProps> = ({
   return (
     <div className="w-full">
       <h4 className="text-md font-semibold text-gray-800 text-center">
-        Gráfico de Saturação vs Brilho
+        Gráfico de Temperatura vs Profundidade
       </h4>
   <div className="w-full h-[900px]">
         <ParentSize>
@@ -370,7 +370,7 @@ const ChartInner: React.FC<ChartInnerProps> = ({
               fontWeight="600"
               fill="#333"
             >
-              Saturação
+              Temperatura
             </text>
             <text
               x={-(yMax / 2)}
@@ -382,7 +382,7 @@ const ChartInner: React.FC<ChartInnerProps> = ({
               transform={`rotate(-90)`}
               style={{ pointerEvents: 'none' }}
             >
-              Brilho
+              Profundidade
             </text>
           </Group>
         </svg>
@@ -399,8 +399,8 @@ const ChartInner: React.FC<ChartInnerProps> = ({
               </div>
               {tooltipData.saturation > 0 || tooltipData.brightness > 0 ? (
                 <div style={{ fontSize: '11px' }}>
-                  <div>Saturação: {tooltipData.saturation.toFixed(2)}</div>
-                  <div>Brilho: {tooltipData.brightness.toFixed(2)}</div>
+                  <div>Temperatura: {tooltipData.saturation.toFixed(2)}</div>
+                  <div>Profundidade: {tooltipData.brightness.toFixed(2)}</div>
                   <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div
                       style={{
