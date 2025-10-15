@@ -424,15 +424,15 @@
       "name": "Alexandre",
       "expected-season": "verao-suave",
       "colors": {
-        "hair_root": "#36221B",
-        "eyebrows": "#36221B",
-        "iris": "#94664E",
-        "forehead": "#FDB6AA",
-        "cheek": "#F09B87",
-        "under_eye_skin": "#DA8D7B",
-        "mouth_contour": "#F18B7F",
-        "mouth": "#F59696",
-        "chin": "#F6AA93"
+        "hair_root": "#644a44",
+        "eyebrows": "#644a44",
+        "iris": "#5d392e",
+        "forehead": "#f7b09c",
+        "cheek": "#e08e7e",
+        "under_eye_skin": "#d28471",
+        "mouth_contour": "#d77a76",
+        "mouth": "#dd8091",
+        "chin": "#f1a092"
       }
     }
   },
