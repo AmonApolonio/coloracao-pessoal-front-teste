@@ -56,6 +56,9 @@ const ColoracaoSimplificado: React.FC = () => {
   // Template selector state
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<number | undefined>(undefined);
   
+  // User photo URL state (from extraction or template selection)
+  const [userPhotoUrl, setUserPhotoUrl] = useState<string>('');
+  
   // Classification states
   const [activeClassificationTab, setActiveClassificationTab] = useState<'ai' | 'manual'>('manual');
   const [isClassifying, setIsClassifying] = useState(false);
@@ -293,9 +296,10 @@ const ColoracaoSimplificado: React.FC = () => {
     setSelectedTemplateIndex(undefined);
   };
 
-  const handleTemplateSelect = (colors: Record<string, string>, index: number) => {
+  const handleTemplateSelect = (colors: Record<string, string>, index: number, userPhoto: string) => {
     setManualColors(colors);
     setSelectedTemplateIndex(index);
+    setUserPhotoUrl(userPhoto);
   };
 
   // Check if all required manual colors are filled
@@ -331,6 +335,11 @@ const ColoracaoSimplificado: React.FC = () => {
     setIsClassifying(true);
     setCurrentStep('classification');
     setError('');
+
+    // Set user photo URL based on mode
+    if (mode === 'extraction' && frontalImageUrl && !userPhotoUrl) {
+      setUserPhotoUrl(frontalImageUrl);
+    }
 
     try {
       if (mode === 'extraction') {
@@ -610,12 +619,14 @@ const ColoracaoSimplificado: React.FC = () => {
           <AnalysisResultsTab 
             finalResults={aiClassificationResult} 
             label="Classificação com Cores Extraídas pela IA"
+            userPhotoUrl={userPhotoUrl}
           />
         )}
         {activeClassificationTab === 'manual' && manualClassificationResult && (
           <AnalysisResultsTab 
             finalResults={manualClassificationResult} 
             label="Classificação com Cores Ajustadas Manualmente"
+            userPhotoUrl={userPhotoUrl}
           />
         )}
       </div>
@@ -743,9 +754,8 @@ const ColoracaoSimplificado: React.FC = () => {
           <div className="space-y-6">
             <ColorTemplateSelector
               templates={manualColorsData}
-              onTemplateSelect={(colors) => {
-                const index = manualColorsData.findIndex(t => t.input.colors === colors);
-                handleTemplateSelect(colors, index);
+              onTemplateSelect={(colors, index, userPhoto) => {
+                handleTemplateSelect(colors, index, userPhoto);
               }}
               selectedIndex={selectedTemplateIndex}
             />
@@ -785,7 +795,7 @@ const ColoracaoSimplificado: React.FC = () => {
         {/* Classification Results Section */}
         {!isAnalyzing && !isClassifying && currentStep === 'classification' && (
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Resultados da Classificação</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">Resultados da Classificação</h2>
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-center">
                 {error}

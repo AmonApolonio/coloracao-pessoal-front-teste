@@ -185,8 +185,13 @@ export interface ColoracaoClassificacaoResponse {
     };
     result: {
       brightness: number;
+      brightness_type: string;
+      confidence_level_season: number;
+      confidence_level_season_alternative: number;
       saturation: number;
+      saturation_type: string;
       season: string;
+      season_alternative: string;
     };
   };
   processing_time_seconds?: number;

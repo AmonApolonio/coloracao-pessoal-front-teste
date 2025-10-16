@@ -10,7 +10,7 @@ interface ColorTemplate {
 
 interface ColorTemplateSelectorProps {
   templates: ColorTemplate[];
-  onTemplateSelect: (colors: Record<string, string>) => void;
+  onTemplateSelect: (colors: Record<string, string>, index: number, userPhoto: string) => void;
   selectedIndex?: number;
 }
 
@@ -32,7 +32,7 @@ const ColorTemplateSelector: React.FC<ColorTemplateSelectorProps> = ({
         {templates.map((template, index) => (
           <div key={index} className="relative group flex items-stretch">
             <button
-              onClick={() => onTemplateSelect(template.input.colors)}
+              onClick={() => onTemplateSelect(template.input.colors, index, template.input['user-photo'])}
               className={`w-full h-full px-4 py-3 rounded-lg font-medium text-sm transition-all ${
                 selectedIndex === index
                   ? 'bg-[#947B62] text-white shadow-md'

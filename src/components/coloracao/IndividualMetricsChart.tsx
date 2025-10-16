@@ -97,13 +97,16 @@ const IndividualMetricsChart: React.FC<IndividualMetricsChartProps> = ({
       displayName = regionNames[region] || region;
     }
 
-    let reversed = false;
+    let reversedValue = false;
+    let scaledValue = (value - 50) * 2; // Convert from 0-100 to -100 to 100
+    
     if (isResultadoTab && reverse[region]) {
-      value = 100 - value;
-      reversed = true;
+      scaledValue = -scaledValue;
+      reversedValue = true;
     }
 
-    const position = value;
+    // Convert back to 0-100 for positioning
+    const position = (scaledValue + 100) / 2;
 
     let leftLabel = metricType === 'saturation' ? 'FRIO' : 'ESCURO';
     let rightLabel = metricType === 'saturation' ? 'QUENTE' : 'CLARO';
@@ -111,7 +114,7 @@ const IndividualMetricsChart: React.FC<IndividualMetricsChartProps> = ({
       leftLabel = 'BRILHANTE';
       rightLabel = 'SUAVE';
     }
-    if (isResultadoTab && reversed) {
+    if (isResultadoTab && reversedValue) {
       [leftLabel, rightLabel] = [rightLabel, leftLabel];
     }
     const centerLabel = 'N';
@@ -189,8 +192,14 @@ const IndividualMetricsChart: React.FC<IndividualMetricsChartProps> = ({
         </div>
 
         <div className="text-center mt-1">
-          <span className="text-xs text-gray-600 font-medium">
-            {value.toFixed(2)}
+          <span 
+            className="text-xs text-gray-600 font-medium cursor-help hover:text-gray-800 transition-colors relative group"
+          >
+            {scaledValue.toFixed(2)}
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+              <div>Valor original: {value.toFixed(2)}</div>
+              <div>Valor convertido: {scaledValue.toFixed(2)}</div>
+            </div>
           </span>
         </div>
       </div>
